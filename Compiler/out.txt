@@ -1,0 +1,116 @@
+var a: integer;
+var b: integer;
+var c: integer;
+var x: integer;
+var j: integer;
+var y: string;
+var f: float;
+var r: boolean;
+constant d = 999999;
+constant e = -20;
+constant z = 560;
+constant w = -1120;
+
+
+
+function iterativeFactorial (n : integer) : integer
+  begin
+
+    var result : integer;
+    result := 1;
+    while (n > 0) do
+      begin
+
+        result := (result * n);
+        n := (n -1);
+        
+      end
+    od;
+    return (result);
+    
+  end;
+
+
+
+function absolute_value (k : integer) : integer
+  begin
+
+    if (k < 0) then
+      k := ( -k);
+    return (k);
+    
+  end;
+
+
+
+function calculateSum (k : integer, r : integer) : integer
+  begin
+
+    return ((k + r));
+    
+  end;
+
+
+
+function calculateDifferent (k : integer, r : integer) : integer
+  begin
+
+    var res : integer;
+    res := (k -r);
+    return (res);
+    
+  end;
+
+
+
+function calculateXor (k : boolean, r : boolean) : boolean
+  begin
+
+    var res1 : integer;
+    var res2 : integer;
+    var res3 : integer;
+    return (((k and (not r)) or ((not k) and r)));
+    
+  end;
+
+
+
+procedure main ()
+  begin
+
+    var n : integer;
+    var sum : integer;
+    var def : integer;
+    var limit : integer;
+    var q : boolean;
+    read (a);
+    write (a);
+    sum := calculateSum ((12 + 2), a);
+    write (sum);
+    sum := calculateSum (sum, w);
+    write (sum);
+    def := calculateDifferent (calculateSum (5, 10), calculateDifferent ((sum + 12), a));
+    write (def);
+    for limit = 0 to 20 do
+      write (limit)
+    od;
+    read (a);
+    a := absolute_value (a);
+    write (a);
+    read (n);
+    a := iterativeFactorial (n);
+    write (a);
+    read (q);
+    read (r);
+    write (r);
+    write (q);
+    begin
+
+      var d : boolean;
+      d := calculateXor (q, r);
+      write (d);
+      
+    end;
+    return ();
+    
+  end;
