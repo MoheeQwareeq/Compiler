@@ -36,6 +36,7 @@ void  SemanticChecker::check_Statement (AST * n , j_type expectedType){
             while (statement->next) {
                 if (statement->head->type == AST_RETURN) {
                     j_type return_type = expression_type(statement->head->a_return.expr);
+                    statement->head->a_return.returnType=return_type;
                     if (expectedType != TYPE_NONE) {
                         if (return_type != expectedType){
                             if(expectedType == TYPE_INTEGER and expression_type(statement->head->a_return.expr)== TYPE_FLOAT)
@@ -64,15 +65,19 @@ void  SemanticChecker::check_Statement (AST * n , j_type expectedType){
             if(n->a_assign.lhs->type == STE_CONST )
                 semantic_error(fileDescriptor, "constant cannot be redeclared");
             
-            if(expectedType == expression_type(n->a_assign.rhs))
+            if(expectedType == expression_type(n->a_assign.rhs)){
+                n->a_assign.rightType=expectedType;
                 return;
-            
-            if(expectedType == TYPE_INTEGER and expression_type(n->a_assign.rhs) == TYPE_FLOAT)
+            }
+            if(expectedType == TYPE_INTEGER and expression_type(n->a_assign.rhs) == TYPE_FLOAT){
+                n->a_assign.rightType = TYPE_FLOAT;
                 return;
+            }
             
-            if(expectedType == TYPE_FLOAT and expression_type(n->a_assign.rhs) == TYPE_INTEGER)
+            if(expectedType == TYPE_FLOAT and expression_type(n->a_assign.rhs) == TYPE_INTEGER){
+                n->a_assign.rightType = TYPE_INTEGER;
                 return;
-            
+            }
             semantic_error(fileDescriptor, "Assign statement type mismatch");
         }
             
@@ -195,9 +200,6 @@ j_type SemanticChecker::expression_type (AST *n){
         //here is convert int to float
         else if((left_type == TYPE_FLOAT && right_type == TYPE_INTEGER)
                 or( left_type == TYPE_INTEGER && right_type == TYPE_FLOAT)){
-            
-            //            if(right_type == TYPE_INTEGER) n->a_binary_op.type=AST_ITOF;
-            //            if(left_type  == TYPE_INTEGER) n->a_binary_op.type=AST_ITOF;
             n->a_binary_op.rel_type=TYPE_FLOAT;
             return TYPE_FLOAT;
         }
@@ -222,8 +224,6 @@ j_type SemanticChecker::expression_type (AST *n){
         //here is convert int to float
         else if((left_type == TYPE_FLOAT && right_type == TYPE_INTEGER)
                 or( left_type == TYPE_INTEGER && right_type == TYPE_FLOAT)){
-            //            if(right_type == TYPE_INTEGER) n->a_binary_op.type=AST_ITOF;
-            //            if(left_type  == TYPE_INTEGER) n->a_binary_op.type=AST_ITOF;
             n->a_binary_op.rel_type=TYPE_FLOAT;
             return TYPE_FLOAT;}
         
@@ -248,8 +248,6 @@ j_type SemanticChecker::expression_type (AST *n){
         //here is convert int to float
         else if((left_type == TYPE_FLOAT && right_type == TYPE_INTEGER)
                 or( left_type == TYPE_INTEGER && right_type == TYPE_FLOAT)){
-            //            if(right_type == TYPE_INTEGER) n->a_binary_op.type=AST_ITOF;
-            //            if(left_type  == TYPE_INTEGER) n->a_binary_op.type=AST_ITOF;
             n->a_binary_op.rel_type=TYPE_BOOLEAN;
             return TYPE_BOOLEAN;}
         
@@ -277,8 +275,6 @@ j_type SemanticChecker::expression_type (AST *n){
         //here is convert int to float
         else if((left_type == TYPE_FLOAT && right_type == TYPE_INTEGER)
                 or( left_type == TYPE_INTEGER && right_type == TYPE_FLOAT)){
-            //            if(right_type == TYPE_INTEGER) n->a_binary_op.type=AST_ITOF;
-            //            if(left_type  == TYPE_INTEGER) n->a_binary_op.type=AST_ITOF;
             n->a_binary_op.rel_type=TYPE_BOOLEAN;
             return TYPE_BOOLEAN;}
         

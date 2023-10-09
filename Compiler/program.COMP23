@@ -13,7 +13,7 @@ var r: boolean;
 
 ## constant ##
 
-constant d = 999999.5+0.4;
+constant d = 99999999.5+0.4;
 constant e = -20.8 ;
 constant z =( 55 * 10 + 2.5 - -4 + 4.4 / 2)+(5+4+4+3+4*3/3- -2)+e;
 constant w = -z * 2;
@@ -24,113 +24,11 @@ constant w = -z * 2;
 ## function and procedure
 
 
-
-function iterativeFactorial(n: integer): integer  ##iterativeFactorial##
-begin 
-    var result: integer;
-    result := 1;
-    while (n > 0) do
-    begin
-        result := result * n;
-        n := n - 1;
-    end
-      od;
-    return (result);
-end;
-
-
-
-function absolute_value(k:integer) : integer
-begin
-
-        if k < 0 then
-            k:=-k
-        fi;
-        return(k);
-end;
-
-
-
-function calculateSum(k:integer ,r:integer) : integer
-begin
-    return (k+r);
-end;
-
-
-
-
-function calculateDifferent(k:integer ,r:integer) : integer
-begin
-   var res:integer;
-   res:=k-r;
-   return (res);
-end;
-
-
-
-
-function calculateXor(k:boolean ,r: boolean) : boolean
-begin
-   var res1:integer;
-   var res2:integer;
-   var res3:integer;
-
-    return ((k and not r) or (not k and r ));
-end;
-
-
-
-
-
-
-
 procedure main()
 begin
-   var n:integer;
-   var sum :integer;
-   var def :integer;
-   var limit:integer;
-   var q: boolean;
-   
-
-   read(a);
-   write(a);
-
-   sum:=calculateSum(12+2,a);
-   write(sum);
-
-   sum:=calculateSum(sum,w);
-   write(sum);
-
-   def:=calculateDifferent (calculateSum(5,10), calculateDifferent(sum+12 ,a));
-   write(def);
-
-   
-    for limit := 0 to 20 do
-       write(limit)
-    od;
-
-
-   read(a);
-   a:=absolute_value(a);
-   write(a);
-    
-
-   read(n);
-   a:= iterativeFactorial(n);
-   write(a);
-
-   read(q);
-   read(r);
-   write(r);
-   write(q);
-   
-   begin
-   var d: boolean;
-   d:= calculateXor(q,r);
-   write(d);
-   end;
-
+   var n:float;
+   n:=1.5+1.5;
+   write(n);
    return ();
 end;
 

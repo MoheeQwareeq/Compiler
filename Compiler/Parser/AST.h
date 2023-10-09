@@ -101,6 +101,8 @@ struct AST{
         struct{
             SymbolTableEntry  *lhs; /* Target of assignment */
             AST *rhs; /* Right side of assignment */
+            j_type rightType; //its real type that in right
+
         } a_assign;
         
         
@@ -148,7 +150,7 @@ struct AST{
         
         struct{
             AST *expr; /* Return value */
-            j_type returnType;
+            j_type returnType; //its real type that return
         } a_return;
         
         

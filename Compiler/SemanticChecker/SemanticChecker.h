@@ -18,11 +18,9 @@ private:
     FileDescriptor* fileDescriptor;
     void semantic_error(FileDescriptor * , string );
     void semantic_warning(FileDescriptor * , string );
-    
-    
-    
-public:
     j_type expression_type (AST *);
+
+public:
     SemanticChecker(FileDescriptor* );
     void check_Statement (AST * , j_type );
     

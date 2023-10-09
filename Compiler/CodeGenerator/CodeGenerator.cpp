@@ -33,6 +33,19 @@ CodeGenerator::CodeGenerator(){
     flage_print_write=0;
 }
 
+string floatToIEEE754HexString(float value) {
+    bitset<32> ieee754Representation;
+    unsigned int intValue = *reinterpret_cast<unsigned int*>(&value);
+    
+    for (int i = 31; i >= 0; i--)
+        ieee754Representation[i] = (intValue >> (31 - i)) & 1;
+    
+    stringstream hexStream;
+    hexStream << hex << uppercase << setw(8) << setfill('0') << intValue;
+    return hexStream.str();
+}
+
+
 void CodeGenerator::gen_var_decl(AST * n){
     if (flag_data == 0){
         flag_data = 1;//its .data
@@ -85,7 +98,7 @@ void CodeGenerator::gen_routine(AST * n){
     gen("move $fp, $sp");// new fp
     int num =n->a_routine_decl.num;
     int num_formal=n->a_routine_decl.num_of_formal;
-
+    
     gen("addiu $sp, $sp, "+to_string(-4*num));
     if (n->a_routine_decl.name->name!= "main"){
         ste_list * fomal =n->a_routine_decl.formals;
@@ -179,6 +192,7 @@ void CodeGenerator::gen_block(AST * n){
 }
 
 void CodeGenerator::gen_opreation(AST * n){
+    
     generate(n->a_binary_op.larg);
     generate(n->a_binary_op.rarg);
     gen("lw $t0, 8($sp)");
@@ -254,24 +268,54 @@ void CodeGenerator::gen_unary_opreation(AST * n){
     gen("sw $t1, 4($sp)");
 }
 
+
+
 void CodeGenerator::gen_lit(AST *n){
-    if (n->type== AST_INTEGER)
+    if (n->type == AST_INTEGER)
         gen ("li $t0,"+to_string(n->a_integer.int_value));
     
-    else if (n->type== AST_BOOLEAN)
+    else if (n->type == AST_BOOLEAN)
         gen ("li $t0,"+to_string(n->a_boolean.value));
+    
+    else if (n->type == AST_FLOAT){
+        
+        string hexString = floatToIEEE754HexString(n->a_float.float_value);
+        string upper4Digits = hexString.substr(0, 4);
+        string lower4Digits = hexString.substr(4, 4);
+        gen("lui $t0, 0x" + upper4Digits);
+        gen("ori $t0, $t0, 0x"+ lower4Digits);
+    }
     
     gen("addiu $sp,$sp, -4");
     gen("sw $t0,4($sp)");
 }
 
-// READ AND WRITE
+
 void CodeGenerator::gen_assign(AST * n){
     
     generate(n->a_assign.rhs);
     gen("addiu $sp, $sp, 4");
-    gen("lw $t0, 0($sp)");
     
+    j_type left =n->a_assign.lhs->getType();
+    j_type right =n->a_assign.rightType;
+    
+    if ((left == TYPE_BOOLEAN) or
+        (left==TYPE_INTEGER and right == TYPE_INTEGER) or
+        (left == TYPE_FLOAT and right == TYPE_FLOAT))
+        gen("lw $t0, 0($sp)");
+    
+    
+    else if ((left==TYPE_INTEGER and right == TYPE_FLOAT)){
+        gen("l.s $f0, 0($sp)");
+        gen("cvt.w.s $f0, $f0");
+        gen("mfc1 $t0, $f0");
+    }
+    else if ((left==TYPE_FLOAT and right == TYPE_INTEGER  )){
+        gen("lw $t0, 0($sp)");
+        gen("mtc1 $t0, $f0");
+        gen("cvt.s.w $f0, $f0");
+        gen("mfc1 $t0, $f0");
+    }
     
     if(n->a_assign.lhs->offset ==-1){
         gen("la $t1, "+n->a_assign.lhs->name);
@@ -283,13 +327,26 @@ void CodeGenerator::gen_assign(AST * n){
 
 
 void CodeGenerator::gen_var(AST * n){
-    if(n->a_var.var->offset == -1) //global var
-        gen("lw $t0, "+n->a_var.var->name);
-    else
-        gen("lw $t0, "+to_string(n->a_var.var->offset*4)+"($fp) ");
     
-    gen("addiu $sp,$sp, -4 ");
-    gen("sw $t0, 4($sp)");
+    if(n->a_var.var->getType() == TYPE_INTEGER or n->a_var.var->getType() == TYPE_BOOLEAN){
+        if(n->a_var.var->offset == -1) //global var
+            gen("lw $t0, "+n->a_var.var->name);
+        else
+            gen("lw $t0, "+to_string(n->a_var.var->offset*4)+"($fp) ");
+        
+        gen("addiu $sp,$sp, -4 ");
+        gen("sw $t0, 4($sp)");
+    }
+    
+    else if (n->a_var.var->getType()  == TYPE_FLOAT){
+        if(n->a_var.var->offset == -1) //global var
+            gen("l.s $f0, "+n->a_var.var->name);
+        else
+            gen("l.s $f0, "+to_string(n->a_var.var->offset*4)+"($fp) ");
+        
+        gen("addiu $sp,$sp, -4 ");
+        gen("s.s $f0, 4($sp)");
+    }
 }
 
 
@@ -341,6 +398,28 @@ void CodeGenerator::gen_read(AST * n){
             newLine
         }
     }
+    
+    else if (n->a_read.var->getType() == TYPE_FLOAT){
+        
+        if(n->a_read.var->offset == -1){
+            gen("# read global float "+n->a_read.var->name);
+            gen("li $v0, 6 ");
+            syscall
+            gen("s.s $f0, "+n->a_read.var->name);
+            newLine
+        }
+        else {
+            gen("# read local float "+n->a_read.var->name);
+            gen("li $v0, 6 ");
+            syscall
+            gen("s.s $f0, "+to_string(n->a_read.var->offset*4)+"($fp)");
+            newLine
+        }
+        
+    }
+    
+    
+    
 }
 
 
@@ -376,6 +455,22 @@ void CodeGenerator:: gen_write(AST * n){
         gen("addiu $sp, $sp , 4");
         gen("lw $ra, 0($sp)");
         newLine
+        
+    }
+    
+    else if(n->a_write.var->getType()==TYPE_FLOAT){
+        
+        if(n->a_write.var->offset == -1  ){
+            gen("# write global float "+n->a_write.var->name);
+            gen("l.s $f12, "+n->a_write.var->name);
+        }
+        else{
+            gen("# write local float "+n->a_write.var->name);
+            gen("l.s $f12,"+to_string(4*n->a_write.var->offset)+"($fp)");
+        }
+        gen("li $v0, 2");
+        syscall
+        
         
     }
     
@@ -575,6 +670,7 @@ void CodeGenerator::generate(AST * n){
             
         case AST_INTEGER:
         case AST_BOOLEAN:
+        case AST_FLOAT:
             gen_lit(n);
             break;
             

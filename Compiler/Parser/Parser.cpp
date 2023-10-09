@@ -367,8 +367,7 @@ AST* Parser::parse_stmt() {
         match(LX_LPAREN);
         expr = parse_expr();
         match(LX_RPAREN);
-        j_type type= semanticChecker->expression_type(expr);
-        stmt = make_ast_node(AST_RETURN, expr,type);
+        stmt = make_ast_node(AST_RETURN, expr);
     }
     else if (token->type == KW_BEGIN) {
         
