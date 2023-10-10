@@ -183,7 +183,6 @@ struct AST{
         struct{
             AST *larg; /* Argument 1 */
             AST *rarg; /* Argument 2 */
-            AST_type type;
             j_type rel_type;
         } a_binary_op;
         

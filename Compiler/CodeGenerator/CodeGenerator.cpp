@@ -33,7 +33,7 @@ CodeGenerator::CodeGenerator(){
     flage_print_write=0;
 }
 
-string floatToIEEE754HexString(float value) {
+string CodeGenerator::floatToIEEE754HexString(float value) {
     bitset<32> ieee754Representation;
     unsigned int intValue = *reinterpret_cast<unsigned int*>(&value);
     
@@ -191,13 +191,19 @@ void CodeGenerator::gen_block(AST * n){
     }
 }
 
+//gen("l.s $f0, 8($sp)");
+//gen("l.s $f1, 4($sp)");
+//gen("s.s $f2, 4($sp)");
+//gen("add.s $f2,$f0,$f1");
+
+
 void CodeGenerator::gen_opreation(AST * n){
-    
     generate(n->a_binary_op.larg);
     generate(n->a_binary_op.rarg);
     gen("lw $t0, 8($sp)");
     gen("lw $t1, 4($sp)");
     gen("addiu $sp, $sp, 8");
+    
     
     switch (n->type) {
         case AST_PLUS:
@@ -255,13 +261,23 @@ void CodeGenerator::gen_opreation(AST * n){
 }
 
 void CodeGenerator::gen_unary_opreation(AST * n){
+    
     generate(n->a_unary_op.arg);
+    
+    
     gen("lw $t0, 4($sp)");
     gen("addiu $sp, $sp, 4");
     
-    if(n->type == AST_UMINUS)
-        gen("mul $t1, $t0,-1");
-    else
+    
+    
+    if(n->type == AST_UMINUS){
+        if(n->a_unary_op.type == TYPE_INTEGER)
+            gen("mul $t1, $t0,-1");
+        
+        else if (n->a_unary_op.type == TYPE_FLOAT)
+            gen("xori $t1,$t0,0x80000000");
+    }
+    else if (n->type == AST_NOT)
         gen("xori $t1, $t0, 1");
     
     gen("addiu $sp,$sp,-4");

@@ -28,7 +28,6 @@ procedure main()
 begin
    var n:float;
    n:=1.5+1.5;
-   write(n);
    return ();
 end;
 

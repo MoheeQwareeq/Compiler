@@ -43,8 +43,7 @@ private:
     void gen_write(AST *);
     void gen_return(AST *);
     string makeLabel();
-    
-    
+    string floatToIEEE754HexString(float value);
     
 public:
     
