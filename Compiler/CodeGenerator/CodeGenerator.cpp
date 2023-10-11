@@ -15,7 +15,7 @@
 CodeGenerator::CodeGenerator(){
     fout.open("assmbly.asm");
     lableCount=0;
-    flag_data=1; //its .data
+    flag_data=1;
     newLine
     gen(".data");
     newLine
@@ -82,11 +82,11 @@ void CodeGenerator::gen_routine(AST * n){
     gen(n->a_routine_decl.name->name +":");
     gen("# save $s0-$s7 and $sp and $fp");
     if (n->a_routine_decl.name->name!= "main"){
-        gen("move $t8, $sp"); //old $sp
+        gen("move $t8, $sp");
     }
     newLine
     gen("addiu $sp, $sp, -36");
-    gen("sw $fp, 36($sp)");//old $fp
+    gen("sw $fp, 36($sp)");
     gen("sw $s0, 32($sp)");
     gen("sw $s1, 28($sp)");
     gen("sw $s2, 24($sp)");
@@ -95,13 +95,13 @@ void CodeGenerator::gen_routine(AST * n){
     gen("sw $s5, 12($sp)");
     gen("sw $s6, 8($sp)");
     gen("sw $s7, 4($sp)");
-    gen("move $fp, $sp");// new fp
+    gen("move $fp, $sp");
     int num =n->a_routine_decl.num;
     int num_formal=n->a_routine_decl.num_of_formal;
     
     gen("addiu $sp, $sp, "+to_string(-4*num));
     if (n->a_routine_decl.name->name!= "main"){
-        ste_list * fomal =n->a_routine_decl.formals;
+        ste_list * fomal = n->a_routine_decl.formals;
         while (fomal->head) {
             gen("addiu $t8, $t8, 4");
             gen("lw $t0, 0($t8)");
@@ -110,8 +110,6 @@ void CodeGenerator::gen_routine(AST * n){
             num_formal--;
         }
     }
-    
-    
     newLine
     gen("# body");
     generate(n->a_routine_decl.body);
@@ -191,73 +189,138 @@ void CodeGenerator::gen_block(AST * n){
     }
 }
 
-//gen("l.s $f0, 8($sp)");
-//gen("l.s $f1, 4($sp)");
-//gen("s.s $f2, 4($sp)");
-//gen("add.s $f2,$f0,$f1");
-
 
 void CodeGenerator::gen_opreation(AST * n){
     generate(n->a_binary_op.larg);
     generate(n->a_binary_op.rarg);
-    gen("lw $t0, 8($sp)");
-    gen("lw $t1, 4($sp)");
+    
+    j_type left  = n->a_binary_op.l_type;
+    j_type right = n->a_binary_op.r_type;
+    j_type rel = n->a_binary_op.rel_type;
+    string str ="";
+    bool flage = (left == TYPE_INTEGER and right== TYPE_INTEGER);
+    
+    if (flage or (left == TYPE_BOOLEAN and right== TYPE_BOOLEAN)){
+        gen("lw $t0, 8($sp)");
+        gen("lw $t1, 4($sp)");
+        str=" $t2, $t0, $t1";
+    }
+    
+    else if(left == TYPE_FLOAT and right== TYPE_FLOAT ){
+        gen("l.s $f0, 8($sp)");
+        gen("l.s $f1, 4($sp)");
+        str=".s $f2,$f0,$f1";
+    }
+    
+    else if(left == TYPE_INTEGER and right== TYPE_FLOAT ){
+        gen("lw $t0, 8($sp)");
+        gen("mtc1 $t0, $f0");
+        gen("cvt.s.w $f0, $f0");
+        gen("l.s $f1, 4($sp)");
+        str=".s $f2,$f0,$f1";
+    }
+    
+    else if(left == TYPE_FLOAT and right== TYPE_INTEGER ){
+        gen("l.s $f0, 8($sp)");
+        gen("lw $t1, 4($sp)");
+        gen("mtc1 $t0, $f1");
+        gen("cvt.s.w $f1, $f1");
+        str=".s $f2,$f0,$f1";
+    }
+    gen("li $t3, 1");
     gen("addiu $sp, $sp, 8");
     
-    
-    switch (n->type) {
+    switch (n->type ) {
+            
         case AST_PLUS:
-            gen("add $t2, $t0, $t1");
+            gen("add"+str);
             break;
             
         case AST_MINUS:
-            gen("sub $t2, $t0, $t1");
+            gen("sub"+str);
             break;
             
         case AST_TIMES:
-            gen("mul $t2, $t0, $t1");
+            gen("mul"+str);
             break;
             
         case AST_DIVIDE:
-            gen("div $t2, $t0, $t1");
-            break;
-            
-        case AST_EQ:
-            gen("seq $t2, $t0, $t1");
-            break;
-            
-        case AST_NEQ:
-            gen("sne $t2, $t0, $t1");
-            break;
-            
-        case AST_LT:
-            gen("slt $t2, $t0, $t1");
-            break;
-            
-        case AST_LE:
-            gen("sle $t2, $t0, $t1");
-            break;
-            
-        case AST_GT:
-            gen("sgt $t2, $t0, $t1");
-            break;
-            
-        case AST_GE:
-            gen("sge $t2, $t0, $t1");
+            gen("div"+str);
             break;
             
         case AST_AND:
-            gen("and $t2, $t0, $t1");
+            gen("and"+str);
             break;
             
         case AST_OR:
-            gen("or $t2, $t0, $t1");
+            gen("or"+str);
             break;
+            
+        case AST_EQ:
+            if(flage)
+                gen("seq"+str);
+            else{
+                gen("c.eq.s $f0, $f1");
+                gen("movt $t2,$t3");
+            }
+            break;
+            
+        case AST_NEQ:
+            if(flage)
+                gen("sne"+str);
+            else{
+                gen("c.eq.s $f0, $f1");
+                gen("movf $t2,$t3");
+            }
+            break;
+            
+        case AST_LT:
+            if(flage)
+                gen("slt"+str);
+            else {
+                gen("c.lt.s $f0, $f1");
+                gen("movt $t2,$t3");
+            }
+            break;
+            
+        case AST_LE:
+            if(flage)
+                gen("sle"+str);
+            else{
+                gen("c.le.s $f0, $f1");
+                gen("movt $t2,$t3");
+            }
+            break;
+            
+        case AST_GT:
+            if(flage)
+                gen("sgt"+str);
+            else {
+                gen("c.lt.s $f1, $f0");
+                gen("movt $t2,$t3");
+            }
+            break;
+            
+        case AST_GE:
+            if(flage)
+                gen("sgt"+str);
+            else{
+                gen("c.lt.s $f0, $f1");
+                gen("movf $t2,$t3");
+            }
+            break;
+            
         default:
             break;
+            
     }
+    
     gen("addiu $sp,$sp,-4");
-    gen("sw $t2, 4($sp)");
+    
+    if (rel == TYPE_INTEGER or rel == TYPE_BOOLEAN)
+        gen("sw $t2, 4($sp)");
+    else if (rel == TYPE_FLOAT)
+        gen("s.s $f2, 4($sp)");
 }
 
 void CodeGenerator::gen_unary_opreation(AST * n){
@@ -267,7 +330,6 @@ void CodeGenerator::gen_unary_opreation(AST * n){
     
     gen("lw $t0, 4($sp)");
     gen("addiu $sp, $sp, 4");
-    
     
     
     if(n->type == AST_UMINUS){
@@ -343,9 +405,8 @@ void CodeGenerator::gen_assign(AST * n){
 
 
 void CodeGenerator::gen_var(AST * n){
-    
     if(n->a_var.var->getType() == TYPE_INTEGER or n->a_var.var->getType() == TYPE_BOOLEAN){
-        if(n->a_var.var->offset == -1) //global var
+        if(n->a_var.var->offset == -1)
             gen("lw $t0, "+n->a_var.var->name);
         else
             gen("lw $t0, "+to_string(n->a_var.var->offset*4)+"($fp) ");
@@ -355,7 +416,7 @@ void CodeGenerator::gen_var(AST * n){
     }
     
     else if (n->a_var.var->getType()  == TYPE_FLOAT){
-        if(n->a_var.var->offset == -1) //global var
+        if(n->a_var.var->offset == -1)
             gen("l.s $f0, "+n->a_var.var->name);
         else
             gen("l.s $f0, "+to_string(n->a_var.var->offset*4)+"($fp) ");
@@ -431,18 +492,14 @@ void CodeGenerator::gen_read(AST * n){
             gen("s.s $f0, "+to_string(n->a_read.var->offset*4)+"($fp)");
             newLine
         }
-        
     }
-    
-    
-    
 }
 
 
 void CodeGenerator:: gen_write(AST * n){
     newLine
     if(n->a_write.var->getType()==TYPE_INTEGER){
-        if(n->a_write.var->offset==-1  ){  // if global
+        if(n->a_write.var->offset==-1  ){
             gen("# write global integer "+n->a_write.var->name);
             gen("lw $a0, "+n->a_write.var->name);
         }
@@ -471,7 +528,6 @@ void CodeGenerator:: gen_write(AST * n){
         gen("addiu $sp, $sp , 4");
         gen("lw $ra, 0($sp)");
         newLine
-        
     }
     
     else if(n->a_write.var->getType()==TYPE_FLOAT){
@@ -486,8 +542,6 @@ void CodeGenerator:: gen_write(AST * n){
         }
         gen("li $v0, 2");
         syscall
-        
-        
     }
     
 }
@@ -582,11 +636,11 @@ void CodeGenerator::gen_call(AST *n){
     gen("sw $t9, 4($sp)");
     newLine
     int c=0;
-    ast_list * arg=n->a_call.arg_list;
+    ast_list * arg = n->a_call.arg_list;
     while (arg->head) {
         c++;
         generate(arg->head);
-        arg=arg->next;
+        arg = arg->next;
     }
     
     gen ("jal " +n->a_call.callee->name);
@@ -613,11 +667,32 @@ void CodeGenerator::gen_call(AST *n){
 void CodeGenerator::gen_return(AST * n){
     newLine
     gen("# return");
-    if(n->a_return.returnType == TYPE_INTEGER or
-       n->a_return.returnType == TYPE_BOOLEAN){
-        generate(n->a_return.expr);
-        gen("addiu $sp, $sp, 4");
+    generate(n->a_return.expr);
+    gen("addiu $sp, $sp, 4");
+
+    j_type expect=n->a_return.expectReturnType;
+    j_type real = n->a_return.realReturnType;
+    
+    if((real == TYPE_INTEGER and expect == TYPE_INTEGER )
+       or real == TYPE_BOOLEAN)
         gen("lw $v1, 0($sp)");
+    
+    else if (real == TYPE_INTEGER and expect == TYPE_FLOAT ){
+        gen("lw $v1, 0($sp)");
+        gen("mtc1 $v1, $f0");
+        gen("cvt.s.w $f0, $f0");
+        gen("mfc1 $v1, $f0");
+    }
+    
+    else if (real == TYPE_FLOAT and expect == TYPE_INTEGER ){
+        gen("l.s $f0, 0($sp)");
+        gen("cvt.w.s $f0, $f0");
+        gen("mfc1 $v1, $f0");
+    }
+    
+    else if (real == TYPE_FLOAT and expect == TYPE_FLOAT ){
+        gen("l.s $f0, 0($sp)");
+        gen("mfc1 $v1, $f0");
     }
     gen("move $sp, $fp");
     gen("# restore $fp and %sp and $s0 - $s7");
@@ -635,16 +710,11 @@ void CodeGenerator::gen_return(AST * n){
 }
 
 
-
-
-
-
-
 void CodeGenerator::generate(AST * n){
     if(n==nullptr)return;
     
     AST_type type = n->type;
-    if (flag_data ==1 and type!=AST_CONST_DECL and  type!=AST_VAR_DECL) {
+    if (flag_data == 1 and type!=AST_CONST_DECL and  type != AST_VAR_DECL) {
         flag_data =0;
         flag_main++;
         newLine
@@ -657,9 +727,7 @@ void CodeGenerator::generate(AST * n){
             gen("li $v0, 10");
             syscall
             newLine
-            
         }
-        
     }
     
     switch (type) {
@@ -753,13 +821,9 @@ string CodeGenerator:: makeLabel(){
     return label;
 }
 
-
-
 void CodeGenerator::gen(string  massage){
     fout<<massage<<endl;
 }
-
-
 
 CodeGenerator::~CodeGenerator() {
     fout.close();

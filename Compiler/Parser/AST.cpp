@@ -95,7 +95,6 @@ AST * make_ast_node (AST_type type, ...){
             
         case AST_RETURN:
             n->a_return.expr = va_arg (ap, AST *);
-            n->a_return.returnType=va_arg (ap,j_type);
             break;
             
         case AST_VAR:
@@ -139,10 +138,6 @@ AST * make_ast_node (AST_type type, ...){
             n->a_float.float_value = static_cast<float>(va_arg(ap, double));
             break;
             
-        case AST_ITOF:
-            n->a_itof.arg = va_arg (ap, AST *);
-            break;
-            
         case AST_EOF:
             break;
             
@@ -151,9 +146,6 @@ AST * make_ast_node (AST_type type, ...){
     va_end(ap);
     return (n);
 }
-
-
-
 
 
 float eval_ast_expr (ofstream  &fout,FileDescriptor*fileDescriptor,AST *n)

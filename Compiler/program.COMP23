@@ -13,7 +13,7 @@ var r: boolean;
 
 ## constant ##
 
-constant d = 99999999.5+0.4;
+constant d = 999999.5+0.4;
 constant e = -20.8 ;
 constant z =( 55 * 10 + 2.5 - -4 + 4.4 / 2)+(5+4+4+3+4*3/3- -2)+e;
 constant w = -z * 2;
@@ -24,10 +24,77 @@ constant w = -z * 2;
 ## function and procedure
 
 
+
+function iterativeFactorial(n: integer): float  ##iterativeFactorial##
+begin 
+    var result: integer;
+    result := 1;
+    while (n > 0) do
+    begin
+        result := result * n;
+        n := n - 1;
+    end
+      od;
+    return (result);
+end;
+
+
+
+function absolute_value(k:integer) : integer
+begin
+
+        if k < 0 then
+            k:=-k
+        fi;
+        return(k);
+end;
+
+
+
+function calculateSum(k:integer ,r:integer) : integer
+begin
+
+    return (k+r);
+end;
+
+
+
+
+function calculateDifferent(k:integer ,r:integer) : integer
+begin
+   var res:float;
+   res:=k-r;
+   return (res);
+end;
+
+
+
+
+function calculateXor(k:boolean ,r: boolean) : boolean
+begin
+   var res1:integer;
+   var res2:integer;
+   var res3:integer;
+
+    return ((k and not r) or (not k and r ));
+end;
+
+
+
+
+
+
+
 procedure main()
 begin
-   var n:float;
-   n:=1.5+1.5;
+   var n: float;
+   var sum :integer;
+   var def :float;
+   var limit:integer;
+   var q: boolean;
+   read(n);
+   def:=iterativeFactorial(n);
+   write(def);
    return ();
 end;
 

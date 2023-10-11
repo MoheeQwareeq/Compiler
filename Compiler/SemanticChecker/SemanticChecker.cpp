@@ -36,13 +36,15 @@ void  SemanticChecker::check_Statement (AST * n , j_type expectedType){
             while (statement->next) {
                 if (statement->head->type == AST_RETURN) {
                     j_type return_type = expression_type(statement->head->a_return.expr);
-                    statement->head->a_return.returnType=return_type;
+                    statement->head->a_return.realReturnType=return_type;
+                    statement->head->a_return.expectReturnType=expectedType;
+                    
                     if (expectedType != TYPE_NONE) {
                         if (return_type != expectedType){
-                            if(expectedType == TYPE_INTEGER and expression_type(statement->head->a_return.expr)== TYPE_FLOAT)
+                            if(expectedType == TYPE_INTEGER and return_type== TYPE_FLOAT)
                                 return;
                             
-                            if(expectedType == TYPE_FLOAT and expression_type(statement->head->a_return.expr) == TYPE_INTEGER)
+                            if(expectedType == TYPE_FLOAT and return_type == TYPE_INTEGER)
                                 return;
                             semantic_error(fileDescriptor, "return value mismatch");}
                         return;
@@ -184,7 +186,9 @@ j_type SemanticChecker::expression_type (AST *n){
     else if (n->type == AST_PLUS ){
         j_type left_type  = expression_type (n->a_binary_op.larg);
         j_type right_type = expression_type (n->a_binary_op.rarg);
-        
+        n->a_binary_op.l_type=left_type;
+        n->a_binary_op.r_type=right_type;
+
         if(left_type == TYPE_INTEGER && right_type == TYPE_INTEGER){
             n->a_binary_op.rel_type=TYPE_INTEGER;
             return TYPE_INTEGER;}
@@ -213,6 +217,9 @@ j_type SemanticChecker::expression_type (AST *n){
         j_type left_type  = expression_type (n->a_binary_op.larg);
         j_type right_type = expression_type (n->a_binary_op.rarg);
         
+        n->a_binary_op.l_type=left_type;
+        n->a_binary_op.r_type=right_type;
+        
         if(left_type == TYPE_INTEGER && right_type == TYPE_INTEGER) {
             n->a_binary_op.rel_type=TYPE_INTEGER;
             return TYPE_INTEGER;}
@@ -238,6 +245,9 @@ j_type SemanticChecker::expression_type (AST *n){
         j_type left_type  = expression_type (n->a_binary_op.larg);
         j_type right_type = expression_type (n->a_binary_op.rarg);
         
+        n->a_binary_op.l_type=left_type;
+        n->a_binary_op.r_type=right_type;
+        
         if((left_type == TYPE_INTEGER && right_type == TYPE_INTEGER)
            or (left_type == TYPE_STRING && right_type == TYPE_STRING)
            or (left_type == TYPE_BOOLEAN && right_type == TYPE_BOOLEAN)
@@ -261,9 +271,12 @@ j_type SemanticChecker::expression_type (AST *n){
     }
     
     else if (n->type == AST_LT  or n->type == AST_LE or n->type == AST_GT or n->type == AST_GE){
-        
         j_type left_type  = expression_type (n->a_binary_op.larg);
         j_type right_type = expression_type (n->a_binary_op.rarg);
+        
+        n->a_binary_op.l_type=left_type;
+        n->a_binary_op.r_type=right_type;
+        
         if(left_type == TYPE_INTEGER && right_type == TYPE_INTEGER){
             n->a_binary_op.rel_type=TYPE_BOOLEAN;
             return TYPE_BOOLEAN;}

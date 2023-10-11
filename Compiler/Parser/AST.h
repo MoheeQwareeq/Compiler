@@ -138,7 +138,7 @@ struct AST{
         
         struct{
             SymbolTableEntry *callee; /* Symbol table entry for function */
-            ast_list *arg_list; /* List of actual arguments */
+            ast_list * arg_list; /* List of actual arguments */
         } a_call;
         
         
@@ -150,7 +150,8 @@ struct AST{
         
         struct{
             AST *expr; /* Return value */
-            j_type returnType; //its real type that return
+            j_type realReturnType; //its real type that return
+            j_type expectReturnType; //its real type that return
         } a_return;
         
         
@@ -183,13 +184,10 @@ struct AST{
         struct{
             AST *larg; /* Argument 1 */
             AST *rarg; /* Argument 2 */
+            j_type l_type;
+            j_type r_type;
             j_type rel_type;
         } a_binary_op;
-        
-        
-        struct {
-            AST *arg;
-        } a_itof;
         
         
         struct{
