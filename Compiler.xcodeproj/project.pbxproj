@@ -38,11 +38,11 @@
 		BD8983F02A9F9B8A0071EE72 /* SemanticChecker.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SemanticChecker.h; sourceTree = "<group>"; };
 		BD8983F12A9F9B9A0071EE72 /* SemanticChecker.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = SemanticChecker.cpp; sourceTree = "<group>"; };
 		BDC085002A99717D002B871D /* Compiler */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Compiler; sourceTree = BUILT_PRODUCTS_DIR; };
-		BDC085032A99717D002B871D /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		BDC085032A99717D002B871D /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; tabWidth = 4; };
 		BDC0850A2A9971EE002B871D /* FileDescriptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileDescriptor.h; sourceTree = "<group>"; };
 		BDC0850B2A9971EE002B871D /* Parser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Parser.h; sourceTree = "<group>"; };
 		BDC0850C2A9971EE002B871D /* SymbolTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SymbolTable.cpp; sourceTree = "<group>"; };
-		BDC0850D2A9971EE002B871D /* AST.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AST.h; sourceTree = "<group>"; };
+		BDC0850D2A9971EE002B871D /* AST.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; path = AST.h; sourceTree = "<group>"; };
 		BDC0850E2A9971EE002B871D /* EntryList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntryList.h; sourceTree = "<group>"; };
 		BDC0850F2A9971EE002B871D /* Parser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Parser.cpp; sourceTree = "<group>"; };
 		BDC085102A9971EE002B871D /* SymbolTableEntry.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SymbolTableEntry.cpp; sourceTree = "<group>"; };

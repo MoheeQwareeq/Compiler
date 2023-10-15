@@ -25,7 +25,7 @@ constant w = -z * 2;
 
 
 
-function iterativeFactorial(n: integer): float  ##iterativeFactorial##
+function iterativeFactorial(n: float): integer  ##iterativeFactorial##
 begin 
     var result: integer;
     result := 1;
@@ -40,7 +40,7 @@ end;
 
 
 
-function absolute_value(k:integer) : integer
+function absolute_value(k:float) : integer
 begin
 
         if k < 0 then
@@ -81,22 +81,16 @@ end;
 
 
 
-
-
-
-
 procedure main()
 begin
    var n: float;
-   var sum :integer;
-   var def :float;
-   var limit:integer;
-   var q: boolean;
+   var res :integer;
+   var s :boolean;
    read(n);
-   def:=iterativeFactorial(n);
-   write(def);
-   return ();
-end;
+   res := iterativeFactorial(n);
+   write(res);
+   return();
+   end;
 
 
 

@@ -120,7 +120,7 @@ void  SemanticChecker::check_Statement (AST * n , j_type expectedType){
             
         case AST_CALL:{
             
-            if(n->a_call.callee->getType() != TYPE_NONE && expectedType !=TYPE_NONE)//function and come frome statment
+            if(n->a_call.callee->getType() != TYPE_NONE and expectedType !=TYPE_NONE)
                 semantic_warning(fileDescriptor, "function result is not used ");
             
             ast_list * arg = n->a_call.arg_list;
@@ -143,11 +143,12 @@ void  SemanticChecker::check_Statement (AST * n , j_type expectedType){
                 arg = n->a_call.arg_list;
                 formal= n->a_call.callee->routine.formals;
                 while (formal->head ) {
-                    
+                    arg->type = expression_type(arg->head);
                     if(formal->head->getType()!=expression_type(arg->head)){
                         if (!((formal->head->getType()==TYPE_INTEGER and expression_type(arg->head) == TYPE_FLOAT ) or
                               (formal->head->getType()==TYPE_FLOAT and expression_type(arg->head) == TYPE_INTEGER )))
-                            semantic_error(fileDescriptor, "invalid type of args");}
+                            semantic_error(fileDescriptor, "invalid type of args");
+                    }
                     arg = arg->next;
                     formal = formal->next;
                 }

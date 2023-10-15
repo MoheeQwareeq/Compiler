@@ -42,6 +42,8 @@ private:
     void gen_read(AST *);
     void gen_write(AST *);
     void gen_return(AST *);
+    void gen_integer_to_float(AST *);
+    void gen_float_to_integer(AST *);
     string makeLabel();
     string floatToIEEE754HexString(float value);
     

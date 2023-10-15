@@ -18,7 +18,8 @@ struct AST;
 struct ast_list      //node to builde ast trees
 {
     AST * head;        // pointer to  a tree
-    ast_list   * next;           // this is the next pointer that you use typically in the list
+    ast_list   * next; // this is the next pointer that you use typically in the list
+    j_type type;
 };
 
 
@@ -63,8 +64,6 @@ enum AST_type{
     AST_UMINUS,          /* unary -operator */
     AST_EOF,             /* End of File */
     AST_FLOAT,           /* float */
-    AST_ITOF,
-    /* convert integer to float */
 };
 
 
@@ -89,20 +88,19 @@ struct AST{
         
         
         struct{
-            SymbolTableEntry *name; /* Routine's symbol table entry */
-            ste_list *formals; /* List of formal parameters */
+            SymbolTableEntry * name; /* Routine's symbol table entry */
+            ste_list * formals; /* List of formal parameters */
             j_type result_type; /* Type of result (none_type for procedures) */
-            AST *body; /* Body of routine */
+            AST * body; /* Body of routine */
             int num;
             int num_of_formal;
         } a_routine_decl;
         
         
         struct{
-            SymbolTableEntry  *lhs; /* Target of assignment */
-            AST *rhs; /* Right side of assignment */
+            SymbolTableEntry  * lhs; /* Target of assignment */
+            AST * rhs; /* Right side of assignment */
             j_type rightType; //its real type that in right
-
         } a_assign;
         
         

@@ -54,14 +54,12 @@ ast_list* Parser::parse_decl_list(ast_list* list) {
         SymbolTableEntry* entry;
         entry = global->getMySymbol("main");
  
-        if (!entry || entry->type != STE_ROUTINE) {
+        if (!entry or entry->type != STE_ROUTINE) {
             cout << "no main function\n\n";
             remove("out.txt");
             remove("assmbly.asm");
             exit(1);
         }
-    
-
     }
     
     else {
