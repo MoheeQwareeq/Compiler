@@ -26,6 +26,7 @@ void SemanticChecker::semantic_warning(FileDescriptor *fd , string message) {
     cout<<endl;
 }
 
+
 bool SemanticChecker::routine_contain_enough_return(AST * n ){
     ast_list * statement = n->a_block.stmts;
     if(!statement->head)return false;
@@ -37,6 +38,26 @@ bool SemanticChecker::routine_contain_enough_return(AST * n ){
         
         else if(statement->head->type == AST_BLOCK)
             flag = routine_contain_enough_return(statement->head);
+        
+        else if(statement->head->type == AST_IF) {
+            bool flag1 = false,flag2 = false;
+            if(statement->head->a_if.altern){
+                if(statement->head->a_if.altern->type == AST_RETURN)
+                    flag1 = true;
+                
+                if(statement->head->a_if.altern->type == AST_BLOCK)
+                    flag1 = routine_contain_enough_return(statement->head->a_if.altern);
+            }
+              if(statement->head->a_if.conseq){
+                if(statement->head->a_if.conseq->type == AST_RETURN)
+                    flag2 = true;
+
+                if (statement->head->a_if.conseq->type == AST_BLOCK)
+                    flag2 = routine_contain_enough_return(statement->head->a_if.conseq);
+            }
+            
+            flag = flag1 and flag2;
+        }
         
         if(flag)
             return true;
@@ -381,7 +402,8 @@ j_type SemanticChecker::expression_type (AST *n){
             if (n->type == AST_AND)
                 semantic_error(fileDescriptor, "type mismatch around and operater");
             else
-                semantic_error(fileDescriptor, "type mismatch around or operater");}
+                semantic_error(fileDescriptor, "type mismatch around or operater");
+        }
     }
     
     else if(n->type ==AST_NOT) {
