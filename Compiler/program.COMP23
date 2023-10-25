@@ -33,8 +33,8 @@ begin
     begin
         result := result * n;
         n := n - 1;
-    end
-      od;
+        end
+        od;
     return (result);
 end;
 
@@ -44,7 +44,7 @@ function absolute_value(k:float) : integer
 begin
 
         if k < 0 then
-            k:=-k
+        k:=-k
         fi;
         return(k);
 end;
@@ -75,22 +75,35 @@ begin
    var res1:integer;
    var res2:integer;
    var res3:integer;
+   return ((k and not r) or (not k and r ));
 
-    return ((k and not r) or (not k and r ));
 end;
 
 
+procedure print(n : integer)
+    begin
+    write(n);
+    end;
 
 procedure main()
 begin
+   var limit:integer;
    var n: float;
    var res :integer;
    var s :boolean;
    read(n);
    res := iterativeFactorial(n);
-   write(res);
-   return();
+   print(res);
+   for limit := 0 to 20 do
+   begin
+   write(limit);
+   end
+   od;
    end;
+
+
+
+
 
 
 

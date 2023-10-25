@@ -19,6 +19,8 @@ private:
     void semantic_error(FileDescriptor * , string );
     void semantic_warning(FileDescriptor * , string );
     j_type expression_type (AST *);
+    bool contain_return(AST * );
+    void cheak_return_type(AST *,j_type);
 
 public:
     SemanticChecker(FileDescriptor* );

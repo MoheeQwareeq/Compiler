@@ -27,39 +27,133 @@ void SemanticChecker::semantic_warning(FileDescriptor *fd , string message) {
 }
 
 
+bool SemanticChecker::contain_return(AST * n ){
+    
+    ast_list * statement = n->a_block.stmts;
+    
+    bool flag =false;
+    while (statement->next) {
+        if (statement->head->type == AST_RETURN)
+            return true;
+        
+        else if(statement->head->type == AST_BLOCK)
+            flag = contain_return(statement->head);
+        
+        if(flag)return true;
+        else  statement = statement->next;
+    }
+    return false;
+}
+
+void SemanticChecker:: cheak_return_type(AST * n ,j_type expectedType){
+    if(n==nullptr)return;
+    ast_list * statement = n->a_block.stmts;
+    if(statement == nullptr) return;
+    
+    while (statement->next) {
+        
+        if (statement->head->type == AST_RETURN) {
+            j_type return_type = expression_type(statement->head->a_return.expr);
+            statement->head->a_return.realReturnType=return_type;
+            statement->head->a_return.expectReturnType=expectedType;
+            
+            if (expectedType != TYPE_NONE) {
+                if (return_type != expectedType){
+                    if(expectedType == TYPE_INTEGER and return_type== TYPE_FLOAT){
+                        statement = statement->next;
+                        continue;
+                    }
+                    
+                    if(expectedType == TYPE_FLOAT and return_type == TYPE_INTEGER){
+                        statement = statement->next;
+                        continue;
+                    }
+                    
+                    semantic_error(fileDescriptor, "return value mismatch type");}
+            }
+            else
+                if (return_type != expectedType)
+                    semantic_error(fileDescriptor, "procedure cannot return value");
+        }
+        
+        else if (statement->head->type == AST_BLOCK)
+            cheak_return_type(statement->head,expectedType);
+        
+        else if (statement->head->type == AST_WHILE){
+            if(statement->head->a_while.body->type == AST_RETURN){
+                semantic_warning(fileDescriptor, "Loop will run at most once");
+            }
+            else if(statement->head->a_while.body->type == AST_BLOCK){
+                cheak_return_type(statement->head->a_while.body,expectedType);
+                
+            }
+        }
+        else if (statement->head->type == AST_FOR){
+            if(statement->head->a_for.body->type == AST_RETURN){
+                semantic_warning(fileDescriptor, "Loop will run at most once");
+            }
+            else if(statement->head->a_for.body->type == AST_BLOCK){
+                cheak_return_type(statement->head->a_for.body,expectedType);
+                
+            }
+        }
+        
+        else if (statement->head->type == AST_IF){
+            if(statement->head->a_if.altern ){
+                if(statement->head->a_if.altern->type == AST_RETURN){
+                    
+                }
+                
+                if(statement->head->a_if.altern->type == AST_BLOCK)
+                    cheak_return_type(statement->head->a_if.conseq,expectedType);
+                
+            }
+            else if (statement->head->a_if.altern){
+                
+                if(statement->head->a_if.conseq->type == AST_RETURN){
+                    
+                }
+                
+                if (statement->head->a_if.altern->type == AST_BLOCK)
+                    cheak_return_type(statement->head->a_if.altern,expectedType);
+            }
+        }
+
+        statement = statement->next;
+        
+    }
+    return;
+}
+
+
 void  SemanticChecker::check_Statement (AST * n , j_type expectedType){
     
     switch (n->type) {
             
         case AST_ROUTINE_DECL:{
-            ast_list *statement = n->a_routine_decl.body->a_block.stmts;
-            while (statement->next) {
-                if (statement->head->type == AST_RETURN) {
-                    j_type return_type = expression_type(statement->head->a_return.expr);
-                    statement->head->a_return.realReturnType=return_type;
-                    statement->head->a_return.expectReturnType=expectedType;
+            
+            // its procedure
+            if(expectedType == TYPE_NONE ){
+                //add return if procedure not contain return statment
+                if (!contain_return(n->a_routine_decl.body)){
+                    ast_list * statement = n->a_routine_decl.body->a_block.stmts;
                     
-                    if (expectedType != TYPE_NONE) {
-                        if (return_type != expectedType){
-                            if(expectedType == TYPE_INTEGER and return_type== TYPE_FLOAT)
-                                return;
-                            
-                            if(expectedType == TYPE_FLOAT and return_type == TYPE_INTEGER)
-                                return;
-                            semantic_error(fileDescriptor, "return value mismatch");}
-                        return;
-                    }
-                    else
-                        if (return_type != expectedType)
-                            semantic_error(fileDescriptor, "procedure cannot return value");
-                    
+                    if (statement->head != nullptr)
+                        while (statement->next != nullptr) {
+                            statement = statement->next;
+                        }
+                    statement->head=make_ast_node(AST_RETURN,nullptr);
+                    statement->next=new ast_list;
+                    statement->next->head=nullptr;
                 }
-                statement = statement->next;
             }
-            
-            if (expectedType != TYPE_NONE)
-                semantic_error(fileDescriptor, "function must return value");
-            
+            // its function
+            else{
+                if (!contain_return(n->a_routine_decl.body))
+                    semantic_error(fileDescriptor, "function must return value");
+            }
+            cheak_return_type(n->a_routine_decl.body,expectedType);
+            return;
         }
             
         case AST_ASSIGN:{
@@ -189,7 +283,7 @@ j_type SemanticChecker::expression_type (AST *n){
         j_type right_type = expression_type (n->a_binary_op.rarg);
         n->a_binary_op.l_type=left_type;
         n->a_binary_op.r_type=right_type;
-
+        
         if(left_type == TYPE_INTEGER && right_type == TYPE_INTEGER){
             n->a_binary_op.rel_type=TYPE_INTEGER;
             return TYPE_INTEGER;}
@@ -202,7 +296,6 @@ j_type SemanticChecker::expression_type (AST *n){
             n->a_binary_op.rel_type=TYPE_FLOAT;
             return TYPE_FLOAT;}
         
-        //here is convert int to float
         else if((left_type == TYPE_FLOAT && right_type == TYPE_INTEGER)
                 or( left_type == TYPE_INTEGER && right_type == TYPE_FLOAT)){
             n->a_binary_op.rel_type=TYPE_FLOAT;
@@ -229,7 +322,6 @@ j_type SemanticChecker::expression_type (AST *n){
             n->a_binary_op.rel_type=TYPE_FLOAT;
             return TYPE_FLOAT;}
         
-        //here is convert int to float
         else if((left_type == TYPE_FLOAT && right_type == TYPE_INTEGER)
                 or( left_type == TYPE_INTEGER && right_type == TYPE_FLOAT)){
             n->a_binary_op.rel_type=TYPE_FLOAT;
@@ -256,7 +348,6 @@ j_type SemanticChecker::expression_type (AST *n){
             n->a_binary_op.rel_type=TYPE_BOOLEAN;
             return TYPE_BOOLEAN; }
         
-        //here is convert int to float
         else if((left_type == TYPE_FLOAT && right_type == TYPE_INTEGER)
                 or( left_type == TYPE_INTEGER && right_type == TYPE_FLOAT)){
             n->a_binary_op.rel_type=TYPE_BOOLEAN;
@@ -286,7 +377,6 @@ j_type SemanticChecker::expression_type (AST *n){
             n->a_binary_op.rel_type=TYPE_BOOLEAN;
             return TYPE_BOOLEAN;}
         
-        //here is convert int to float
         else if((left_type == TYPE_FLOAT && right_type == TYPE_INTEGER)
                 or( left_type == TYPE_INTEGER && right_type == TYPE_FLOAT)){
             n->a_binary_op.rel_type=TYPE_BOOLEAN;
