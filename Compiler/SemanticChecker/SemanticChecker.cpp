@@ -26,103 +26,76 @@ void SemanticChecker::semantic_warning(FileDescriptor *fd , string message) {
     cout<<endl;
 }
 
-
-bool SemanticChecker::contain_return(AST * n ){
-    
+bool SemanticChecker::routine_contain_enough_return(AST * n ){
     ast_list * statement = n->a_block.stmts;
-    
+    if(!statement->head)return false;
     bool flag =false;
     while (statement->next) {
+        
         if (statement->head->type == AST_RETURN)
             return true;
         
         else if(statement->head->type == AST_BLOCK)
-            flag = contain_return(statement->head);
+            flag = routine_contain_enough_return(statement->head);
         
-        if(flag)return true;
+        if(flag)
+            return true;
         else  statement = statement->next;
     }
     return false;
 }
 
-void SemanticChecker:: cheak_return_type(AST * n ,j_type expectedType){
-    if(n==nullptr)return;
-    ast_list * statement = n->a_block.stmts;
-    if(statement == nullptr) return;
-    
-    while (statement->next) {
-        
-        if (statement->head->type == AST_RETURN) {
-            j_type return_type = expression_type(statement->head->a_return.expr);
-            statement->head->a_return.realReturnType=return_type;
-            statement->head->a_return.expectReturnType=expectedType;
-            
-            if (expectedType != TYPE_NONE) {
-                if (return_type != expectedType){
-                    if(expectedType == TYPE_INTEGER and return_type== TYPE_FLOAT){
-                        statement = statement->next;
-                        continue;
-                    }
-                    
-                    if(expectedType == TYPE_FLOAT and return_type == TYPE_INTEGER){
-                        statement = statement->next;
-                        continue;
-                    }
-                    
-                    semantic_error(fileDescriptor, "return value mismatch type");}
-            }
-            else
-                if (return_type != expectedType)
-                    semantic_error(fileDescriptor, "procedure cannot return value");
-        }
-        
-        else if (statement->head->type == AST_BLOCK)
-            cheak_return_type(statement->head,expectedType);
-        
-        else if (statement->head->type == AST_WHILE){
-            if(statement->head->a_while.body->type == AST_RETURN){
-                semantic_warning(fileDescriptor, "Loop will run at most once");
-            }
-            else if(statement->head->a_while.body->type == AST_BLOCK){
-                cheak_return_type(statement->head->a_while.body,expectedType);
-                
-            }
-        }
-        else if (statement->head->type == AST_FOR){
-            if(statement->head->a_for.body->type == AST_RETURN){
-                semantic_warning(fileDescriptor, "Loop will run at most once");
-            }
-            else if(statement->head->a_for.body->type == AST_BLOCK){
-                cheak_return_type(statement->head->a_for.body,expectedType);
-                
-            }
-        }
-        
-        else if (statement->head->type == AST_IF){
-            if(statement->head->a_if.altern ){
-                if(statement->head->a_if.altern->type == AST_RETURN){
-                    
-                }
-                
-                if(statement->head->a_if.altern->type == AST_BLOCK)
-                    cheak_return_type(statement->head->a_if.conseq,expectedType);
-                
-            }
-            else if (statement->head->a_if.altern){
-                
-                if(statement->head->a_if.conseq->type == AST_RETURN){
-                    
-                }
-                
-                if (statement->head->a_if.altern->type == AST_BLOCK)
-                    cheak_return_type(statement->head->a_if.altern,expectedType);
-            }
-        }
 
-        statement = statement->next;
+
+
+void SemanticChecker:: cheak_all_return_type(AST * n ,j_type expectedType){
+    if(n == nullptr)
+        return;
+    
+    else if(n->type == AST_RETURN){
+        j_type return_type = expression_type(n->a_return.expr);
+        n->a_return.realReturnType=return_type;
+        n->a_return.expectReturnType=expectedType;
         
+        if (expectedType != TYPE_NONE) {
+            if (return_type != expectedType){
+                if(expectedType == TYPE_INTEGER and return_type== TYPE_FLOAT)return;
+                
+                if(expectedType == TYPE_FLOAT and return_type == TYPE_INTEGER)return;
+                
+                semantic_error(fileDescriptor, "return value mismatch type");}
+        }
+        else
+            if (return_type != expectedType)
+                semantic_error(fileDescriptor, "procedure cannot return value");
     }
-    return;
+    
+    else if(n->type == AST_BLOCK){
+        ast_list * statement = n->a_block.stmts;
+        if(statement == nullptr) return;
+        while (statement->next) {
+            
+            if (statement->head->type == AST_RETURN or statement->head->type == AST_BLOCK) {
+                cheak_all_return_type(statement->head,expectedType);
+            }
+            
+            else if (statement->head->type == AST_WHILE){
+                cheak_all_return_type(statement->head->a_while.body,expectedType);
+                
+            }
+            
+            else if (statement->head->type == AST_FOR){
+                cheak_all_return_type(statement->head->a_for.body,expectedType);
+            }
+            
+            else if (statement->head->type == AST_IF){
+                cheak_all_return_type(statement->head->a_if.conseq,expectedType);
+                cheak_all_return_type(statement->head->a_if.altern,expectedType);
+            }
+            
+            statement = statement->next;
+        }
+    }
 }
 
 
@@ -135,7 +108,7 @@ void  SemanticChecker::check_Statement (AST * n , j_type expectedType){
             // its procedure
             if(expectedType == TYPE_NONE ){
                 //add return if procedure not contain return statment
-                if (!contain_return(n->a_routine_decl.body)){
+                if (!routine_contain_enough_return(n->a_routine_decl.body)){
                     ast_list * statement = n->a_routine_decl.body->a_block.stmts;
                     
                     if (statement->head != nullptr)
@@ -149,10 +122,10 @@ void  SemanticChecker::check_Statement (AST * n , j_type expectedType){
             }
             // its function
             else{
-                if (!contain_return(n->a_routine_decl.body))
+                if (!routine_contain_enough_return(n->a_routine_decl.body))
                     semantic_error(fileDescriptor, "function must return value");
             }
-            cheak_return_type(n->a_routine_decl.body,expectedType);
+            cheak_all_return_type(n->a_routine_decl.body,expectedType);
             return;
         }
             

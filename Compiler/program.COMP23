@@ -89,16 +89,11 @@ procedure main()
 begin
    var limit:integer;
    var n: float;
-   var res :integer;
+   var res :float;
    var s :boolean;
    read(n);
-   res := iterativeFactorial(n);
-   print(res);
-   for limit := 0 to 20 do
-   begin
-   write(limit);
-   end
-   od;
+   n := iterativeFactorial(n);
+   print(n);
    end;
 
 
