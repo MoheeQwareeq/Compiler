@@ -1,10 +1,9 @@
 //
 //  Parser.cpp
-//  Parser
+//  Compiler
 //
-//  Created by MOHEE QWAREEQ on 09/08/2023.
+//  Created by MOHEE QWAREEQ on 9/8/2023.
 //
-
 
 #include "Parser.h"
 
@@ -834,16 +833,3 @@ Parser::~Parser() {
     fout.close();
     delete scanner;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

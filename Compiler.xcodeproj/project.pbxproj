@@ -9,9 +9,9 @@
 /* Begin PBXBuildFile section */
 		BD65B78A2AA90ED50011A5EB /* CodeGenerator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BD65B7892AA90ED50011A5EB /* CodeGenerator.cpp */; };
 		BD8983F22A9F9B9A0071EE72 /* SemanticChecker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BD8983F12A9F9B9A0071EE72 /* SemanticChecker.cpp */; };
+		BDA4DC372AEF7D1A0013A423 /* Parser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BDA4DC362AEF7D1A0013A423 /* Parser.cpp */; };
 		BDC085042A99717D002B871D /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BDC085032A99717D002B871D /* main.cpp */; };
 		BDC0851B2A9971EF002B871D /* SymbolTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BDC0850C2A9971EE002B871D /* SymbolTable.cpp */; };
-		BDC0851C2A9971EF002B871D /* Parser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BDC0850F2A9971EE002B871D /* Parser.cpp */; };
 		BDC0851D2A9971EF002B871D /* SymbolTableEntry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BDC085102A9971EE002B871D /* SymbolTableEntry.cpp */; };
 		BDC0851E2A9971EF002B871D /* AST.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BDC085112A9971EE002B871D /* AST.cpp */; };
 		BDC0851F2A9971EF002B871D /* EntryList.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BDC085132A9971EF002B871D /* EntryList.cpp */; };
@@ -37,6 +37,7 @@
 		BD65B7892AA90ED50011A5EB /* CodeGenerator.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = CodeGenerator.cpp; sourceTree = "<group>"; };
 		BD8983F02A9F9B8A0071EE72 /* SemanticChecker.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SemanticChecker.h; sourceTree = "<group>"; };
 		BD8983F12A9F9B9A0071EE72 /* SemanticChecker.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = SemanticChecker.cpp; sourceTree = "<group>"; };
+		BDA4DC362AEF7D1A0013A423 /* Parser.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Parser.cpp; sourceTree = "<group>"; };
 		BDC085002A99717D002B871D /* Compiler */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Compiler; sourceTree = BUILT_PRODUCTS_DIR; };
 		BDC085032A99717D002B871D /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; tabWidth = 4; };
 		BDC0850A2A9971EE002B871D /* FileDescriptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileDescriptor.h; sourceTree = "<group>"; };
@@ -44,7 +45,6 @@
 		BDC0850C2A9971EE002B871D /* SymbolTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SymbolTable.cpp; sourceTree = "<group>"; };
 		BDC0850D2A9971EE002B871D /* AST.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; path = AST.h; sourceTree = "<group>"; };
 		BDC0850E2A9971EE002B871D /* EntryList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntryList.h; sourceTree = "<group>"; };
-		BDC0850F2A9971EE002B871D /* Parser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Parser.cpp; sourceTree = "<group>"; };
 		BDC085102A9971EE002B871D /* SymbolTableEntry.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SymbolTableEntry.cpp; sourceTree = "<group>"; };
 		BDC085112A9971EE002B871D /* AST.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AST.cpp; sourceTree = "<group>"; };
 		BDC085122A9971EF002B871D /* Scanner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Scanner.h; sourceTree = "<group>"; };
@@ -93,7 +93,7 @@
 				BDC0850D2A9971EE002B871D /* AST.h */,
 				BDC085112A9971EE002B871D /* AST.cpp */,
 				BDC0850B2A9971EE002B871D /* Parser.h */,
-				BDC0850F2A9971EE002B871D /* Parser.cpp */,
+				BDA4DC362AEF7D1A0013A423 /* Parser.cpp */,
 			);
 			path = Parser;
 			sourceTree = "<group>";
@@ -224,9 +224,9 @@
 				BDC0851F2A9971EF002B871D /* EntryList.cpp in Sources */,
 				BD65B78A2AA90ED50011A5EB /* CodeGenerator.cpp in Sources */,
 				BD8983F22A9F9B9A0071EE72 /* SemanticChecker.cpp in Sources */,
+				BDA4DC372AEF7D1A0013A423 /* Parser.cpp in Sources */,
 				BDC085222A9971EF002B871D /* FileDescriptor.cpp in Sources */,
 				BDC0851D2A9971EF002B871D /* SymbolTableEntry.cpp in Sources */,
-				BDC0851C2A9971EF002B871D /* Parser.cpp in Sources */,
 				BDC085042A99717D002B871D /* main.cpp in Sources */,
 				BDC085212A9971EF002B871D /* Scanner.cpp in Sources */,
 				BDC085202A9971EF002B871D /* SymbolTableList.cpp in Sources */,
