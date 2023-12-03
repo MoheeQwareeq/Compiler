@@ -16,8 +16,8 @@ FileDescriptor::FileDescriptor(string fileName){
         cout<<"Start Runing ... "+file+"\n"<<endl;
         if (getline(streamFile, buffer)){
             buffer=buffer+"\n";
-            line_number=SET;
-            char_number=UNSET;}
+            lineNumber=SET;
+            charNumber=UNSET;}
     }
     else cout<<"File not open \n";
 }
@@ -36,12 +36,12 @@ bool FileDescriptor::isOpen(){
 
 int FileDescriptor::getLineNum(){
     
-    return line_number;
+    return lineNumber;
 }
 
 int FileDescriptor::getCharNum(){
     
-    return char_number;
+    return charNumber;
 }
 
 
@@ -54,15 +54,14 @@ void FileDescriptor::close(){
 
 char FileDescriptor::getChar (){
     const char* line = buffer.c_str();
-    char curentChar=line[char_number];
-    if(char_number < strlen(line)){
-        char_number++;}
+    char curentChar=line[charNumber];
+    if(charNumber < strlen(line)){
+        charNumber++;}
     else {
         if (getline(streamFile, buffer)){
-            
             buffer=buffer+"\n";
-            line_number++;
-            char_number=UNSET;}
+            lineNumber++;
+            charNumber=UNSET;}
         
         else {
             buffer += static_cast<char>(EOF);
@@ -79,32 +78,30 @@ string FileDescriptor::getCurrLine(){
 }
 
 void FileDescriptor::ungetChar (){
-    char_number--;
+    charNumber--;
 }
 
 void FileDescriptor::reportError (string msg){
     
     cout <<getCurrLine();
-    for (int i = 0; i < char_number-3; i++) cout << " ";
+    for (int i = 0; i < charNumber-3; i++) cout << " ";
     cout << "^"<< endl;
     cout<<msg+" on line ";
     cout<<getLineNum();
     cout<<" of "+file<<endl;
     cout<<endl;
-
+    
 }
 
 void FileDescriptor::reportWarning(string msg){
     cout <<getCurrLine();
-    for (int i = 0; i < char_number-3; i++) cout << " ";
+    for (int i = 0; i < charNumber-3; i++) cout << " ";
     cout << "^"<< endl;
     cout<<"Warnning: "+msg+" on line ";
     cout<<getLineNum();
     cout<<" of "+file<<endl;
     cout<<endl;
-
 }
-
 
 
 FileDescriptor::~FileDescriptor(){

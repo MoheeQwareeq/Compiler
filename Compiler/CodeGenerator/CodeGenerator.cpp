@@ -15,7 +15,7 @@
 CodeGenerator::CodeGenerator(){
     fout.open("assmbly.asm");
     lableCount=0;
-    flag_data=1;
+    flagData=1;
     newLine
     gen(".data");
     newLine
@@ -26,11 +26,11 @@ CodeGenerator::CodeGenerator(){
     gen("__buffer__: .space 10");
     gen("__error__string__: .asciiz \"run time error\\n\"");
     newLine
-    flag_main=0;
-    flage_read=0;
-    flage_write=0;
-    flage_print_read=0;
-    flage_print_write=0;
+    flagMain=0;
+    flageRead=0;
+    flageWrite=0;
+    flagePrintRead=0;
+    flagePrintWrite=0;
 }
 
 string CodeGenerator::floatToIEEE754HexString(float value) {
@@ -47,8 +47,8 @@ string CodeGenerator::floatToIEEE754HexString(float value) {
 
 
 void CodeGenerator::gen_var_decl(AST * n){
-    if (flag_data == 0){
-        flag_data = 1;//its .data
+    if (flagData == 0){
+        flagData = 1;//its .data
         newLine
         gen(".data");
         newLine
@@ -60,8 +60,8 @@ void CodeGenerator::gen_var_decl(AST * n){
 }
 
 void CodeGenerator::gen_constant(AST * n){
-    if (flag_data == 0){
-        flag_data = 1;//its .data
+    if (flagData == 0){
+        flagData = 1;//its .data
         newLine
         gen(".data");
         newLine
@@ -114,8 +114,8 @@ void CodeGenerator::gen_routine(AST * n){
     gen("# body");
     generate(n->a_routine_decl.body);
     
-    if(flage_print_write == 0 and flage_write==1) {
-        flage_print_write++;
+    if(flagePrintWrite == 0 and flageWrite==1) {
+        flagePrintWrite++;
         newLine
         gen("write_____boolean :");
         gen("beq $t0, $zero, _F_a_l_s_e_");
@@ -128,8 +128,8 @@ void CodeGenerator::gen_routine(AST * n){
         syscall
         gen("jr $ra");}
     
-    if(flage_print_read == 0 and flage_read == 1){
-        flage_print_read++;
+    if(flagePrintRead == 0 and flageRead == 1){
+        flagePrintRead++;
         newLine
         gen("read____boolean:");
         gen("li $v0, 8");
@@ -487,7 +487,7 @@ void CodeGenerator::gen_read(AST * n){
     }
     
     else if(n->a_read.var->getType() == TYPE_BOOLEAN){
-        flage_read=1;
+        flageRead=1;
         if(n->a_read.var->offset==-1){
             gen("# read global boolean "+n->a_read.var->name);
             gen("addiu $sp, $sp , -4");
@@ -551,7 +551,7 @@ void CodeGenerator:: gen_write(AST * n){
     }
     
     else if(n->a_write.var->getType()==TYPE_BOOLEAN){
-        flage_write=1;
+        flageWrite=1;
         if(n->a_write.var->offset==-1){
             gen("# write global boolean "+n->a_write.var->name);
             gen("lw $t0, "+n->a_write.var->name);
@@ -769,13 +769,13 @@ void CodeGenerator::generate(AST * n){
     if(n==nullptr)return;
     
     AST_type type = n->type;
-    if (flag_data == 1 and type!=AST_CONST_DECL and  type != AST_VAR_DECL) {
-        flag_data =0;
-        flag_main++;
+    if (flagData == 1 and type!=AST_CONST_DECL and  type != AST_VAR_DECL) {
+        flagData =0;
+        flagMain++;
         newLine
         gen(".text");
         newLine
-        if(flag_main==1){
+        if(flagMain==1){
             gen("jal main");
             newLine
             gen("exit:");

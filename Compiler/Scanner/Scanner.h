@@ -36,7 +36,6 @@ typedef enum
 
 const int keys = 32; /* number of keywords */
 
-
 const string keyword[] = {
     "and","begin","boolean","by","constant",
     "do", "else", "end", "false", "fi", "float", "for", "from",
@@ -58,27 +57,26 @@ static LEXEME_TYPE key_type[] = {
 struct  TOKEN
 {
     LEXEME_TYPE type;
-    int    int_value;
-    float  float_value;
-    string string_value;
+    int    intValue;
+    float  floatValue;
+    string stringValue;
 };
 
 class Scanner{
 private:
     FileDescriptor *fileDescriptor;
-    TOKEN *get_identifier(char ch);
-    TOKEN *get_number(char ch);
-    TOKEN *get_string(char ch);
-    TOKEN * skip_comments(char ch);//
-    bool check_keyword(string identifier ,int &index);
-    bool is_operators(char ch,LEXEME_TYPE &t);
-    bool is_delimiter(char ch);
+    TOKEN * getIdentifier(char ch);
+    TOKEN * getNumber(char ch);
+    TOKEN * getString(char ch);
+    TOKEN * skipComments(char ch);//
+    bool checkKeyword(string identifier ,int &index);
+    bool isOperators(char ch,LEXEME_TYPE &t);
+    bool isDelimiter(char ch);
     
 public:
     Scanner();
     Scanner (FileDescriptor *fd);
-    TOKEN* Scan();
-    
+    TOKEN * Scan();
 };
 
 

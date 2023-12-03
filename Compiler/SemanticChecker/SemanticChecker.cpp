@@ -13,7 +13,7 @@ SemanticChecker::SemanticChecker(FileDescriptor* fd){
 }
 
 
-void SemanticChecker::semantic_error(FileDescriptor *fd , string message) {
+void SemanticChecker::semanticError(FileDescriptor *fd , string message) {
     fd->reportError("Semantic Error: "+message);
     cout<<endl;
     remove("out.txt");
@@ -21,7 +21,7 @@ void SemanticChecker::semantic_error(FileDescriptor *fd , string message) {
     exit(EXIT_FAILURE);
 }
 
-void SemanticChecker::semantic_warning(FileDescriptor *fd , string message) {
+void SemanticChecker::semanticWarning(FileDescriptor *fd , string message) {
     fd->reportWarning(message);
     cout<<endl;
 }
@@ -84,11 +84,11 @@ void SemanticChecker:: cheak_all_return_type(AST * n ,j_type expectedType){
                 
                 if(expectedType == TYPE_FLOAT and return_type == TYPE_INTEGER)return;
                 
-                semantic_error(fileDescriptor, "return value mismatch type");}
+                semanticError(fileDescriptor, "return value mismatch type");}
         }
         else
             if (return_type != expectedType)
-                semantic_error(fileDescriptor, "procedure cannot return value");
+                semanticError(fileDescriptor, "procedure cannot return value");
     }
     
     else if(n->type == AST_BLOCK){
@@ -144,7 +144,7 @@ void  SemanticChecker::check_Statement (AST * n , j_type expectedType){
             // its function
             else{
                 if (!routine_contain_enough_return(n->a_routine_decl.body))
-                    semantic_error(fileDescriptor, "function must return value");
+                    semanticError(fileDescriptor, "function must return value");
             }
             cheak_all_return_type(n->a_routine_decl.body,expectedType);
             return;
@@ -153,7 +153,7 @@ void  SemanticChecker::check_Statement (AST * n , j_type expectedType){
         case AST_ASSIGN:{
             
             if(n->a_assign.lhs->type == STE_CONST )
-                semantic_error(fileDescriptor, "constant cannot be redeclared");
+                semanticError(fileDescriptor, "constant cannot be redeclared");
             
             if(expectedType == expression_type(n->a_assign.rhs)){
                 n->a_assign.rightType=expectedType;
@@ -168,7 +168,7 @@ void  SemanticChecker::check_Statement (AST * n , j_type expectedType){
                 n->a_assign.rightType = TYPE_INTEGER;
                 return;
             }
-            semantic_error(fileDescriptor, "Assign statement type mismatch");
+            semanticError(fileDescriptor, "Assign statement type mismatch");
         }
             
             
@@ -176,7 +176,7 @@ void  SemanticChecker::check_Statement (AST * n , j_type expectedType){
             if(expression_type(n->a_if.predicate) == expectedType)
                 return;
             
-            semantic_error(fileDescriptor, "if statement predicate must be boolean type");
+            semanticError(fileDescriptor, "if statement predicate must be boolean type");
         }
             
             
@@ -185,31 +185,31 @@ void  SemanticChecker::check_Statement (AST * n , j_type expectedType){
             if(expression_type(n->a_while.predicate) == expectedType)
                 return;
             
-            semantic_error(fileDescriptor, "while statement predicate must be boolean type");
+            semanticError(fileDescriptor, "while statement predicate must be boolean type");
         }
         case AST_READ:
             if(n->a_read.var->type==STE_CONST)
-                semantic_error(fileDescriptor, "constant cannot be redeclared");
+                semanticError(fileDescriptor, "constant cannot be redeclared");
             return;
             
             
         case AST_FOR:{
             if(n->a_for.var->type == STE_CONST)
-                semantic_error(fileDescriptor, "cannot use constant var");
+                semanticError(fileDescriptor, "cannot use constant var");
             
             if(n->a_for.var->getType() == expectedType){
                 if( expression_type( n->a_for.lower_bound) == TYPE_INTEGER and  expression_type( n->a_for.upper_bound)==TYPE_INTEGER)return;
                 
-                semantic_error(fileDescriptor, "lower and upper bound must be integers");
+                semanticError(fileDescriptor, "lower and upper bound must be integers");
             }
-            semantic_error(fileDescriptor, "variable in a for statement must be integer");
+            semanticError(fileDescriptor, "variable in a for statement must be integer");
             
         }
             
         case AST_CALL:{
             
             if(n->a_call.callee->getType() != TYPE_NONE and expectedType !=TYPE_NONE)
-                semantic_warning(fileDescriptor, "function result is not used ");
+                semanticWarning(fileDescriptor, "function result is not used ");
             
             ast_list * arg = n->a_call.arg_list;
             ste_list * formal= n->a_call.callee->routine.formals;
@@ -226,7 +226,7 @@ void  SemanticChecker::check_Statement (AST * n , j_type expectedType){
                 arg = arg->next;
             }
             
-            if(number_of_args != number_of_formals)semantic_error(fileDescriptor, "invalid number of args");
+            if(number_of_args != number_of_formals)semanticError(fileDescriptor, "invalid number of args");
             else{
                 arg = n->a_call.arg_list;
                 formal= n->a_call.callee->routine.formals;
@@ -235,7 +235,7 @@ void  SemanticChecker::check_Statement (AST * n , j_type expectedType){
                     if(formal->head->getType()!=expression_type(arg->head)){
                         if (!((formal->head->getType()==TYPE_INTEGER and expression_type(arg->head) == TYPE_FLOAT ) or
                               (formal->head->getType()==TYPE_FLOAT and expression_type(arg->head) == TYPE_INTEGER )))
-                            semantic_error(fileDescriptor, "invalid type of args");
+                            semanticError(fileDescriptor, "invalid type of args");
                     }
                     arg = arg->next;
                     formal = formal->next;
@@ -297,7 +297,7 @@ j_type SemanticChecker::expression_type (AST *n){
         }
         
         
-        else semantic_error(fileDescriptor, "type mismatch around + operater");
+        else semanticError(fileDescriptor, "type mismatch around + operater");
     }
     
     
@@ -322,9 +322,9 @@ j_type SemanticChecker::expression_type (AST *n){
             return TYPE_FLOAT;}
         
         else {
-            if (n->type == AST_MINUS) semantic_error(fileDescriptor, "type mismatch around - operater");
-            else if (n->type == AST_TIMES)semantic_error(fileDescriptor, "type mismatch around * operater");
-            else semantic_error(fileDescriptor, "type mismatch around / operater");
+            if (n->type == AST_MINUS) semanticError(fileDescriptor, "type mismatch around - operater");
+            else if (n->type == AST_TIMES)semanticError(fileDescriptor, "type mismatch around * operater");
+            else semanticError(fileDescriptor, "type mismatch around / operater");
         }
     }
     
@@ -350,9 +350,9 @@ j_type SemanticChecker::expression_type (AST *n){
         
         else {
             if (n->type == AST_EQ )
-                semantic_error(fileDescriptor, "type mismatch around = operater");
+                semanticError(fileDescriptor, "type mismatch around = operater");
             else
-                semantic_error(fileDescriptor, "type mismatch around != operater");
+                semanticError(fileDescriptor, "type mismatch around != operater");
         }
     }
     
@@ -378,13 +378,13 @@ j_type SemanticChecker::expression_type (AST *n){
         
         else {
             if (n->type == AST_LT )
-                semantic_error(fileDescriptor, "type mismatch around < operater");
+                semanticError(fileDescriptor, "type mismatch around < operater");
             else if (n->type == AST_LE )
-                semantic_error(fileDescriptor, "type mismatch around <= operater");
+                semanticError(fileDescriptor, "type mismatch around <= operater");
             else if (n->type == AST_GT )
-                semantic_error(fileDescriptor, "type mismatch around > operater");
+                semanticError(fileDescriptor, "type mismatch around > operater");
             else
-                semantic_error(fileDescriptor, "type mismatch around >= operater");
+                semanticError(fileDescriptor, "type mismatch around >= operater");
         }
     }
     
@@ -400,9 +400,9 @@ j_type SemanticChecker::expression_type (AST *n){
         
         else {
             if (n->type == AST_AND)
-                semantic_error(fileDescriptor, "type mismatch around and operater");
+                semanticError(fileDescriptor, "type mismatch around and operater");
             else
-                semantic_error(fileDescriptor, "type mismatch around or operater");
+                semanticError(fileDescriptor, "type mismatch around or operater");
         }
     }
     
@@ -413,7 +413,7 @@ j_type SemanticChecker::expression_type (AST *n){
             n->a_unary_op.type=TYPE_BOOLEAN;
             return TYPE_BOOLEAN;}
         else
-            semantic_error(fileDescriptor, "type mismatch around not operater");
+            semanticError(fileDescriptor, "type mismatch around not operater");
     }
     
     else if(n->type ==AST_UMINUS) {
@@ -428,7 +428,7 @@ j_type SemanticChecker::expression_type (AST *n){
             return TYPE_FLOAT;}
         
         else
-            semantic_error(fileDescriptor, "type mismatch");
+            semanticError(fileDescriptor, "type mismatch");
     }
     
     return TYPE_NONE;

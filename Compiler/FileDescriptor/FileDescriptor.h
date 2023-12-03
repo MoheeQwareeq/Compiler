@@ -19,8 +19,8 @@ class FileDescriptor{
 private:
     
     fstream streamFile;
-    int line_number;     /* line number in the file */
-    int char_number;     /* character number in the line */
+    int lineNumber;     /* line number in the file */
+    int charNumber;     /* character number in the line */
     string buffer;        /* buffer to store a line */
     string file;         /* file name */
     

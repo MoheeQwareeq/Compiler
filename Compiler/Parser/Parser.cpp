@@ -17,7 +17,7 @@ Parser::Parser(FileDescriptor* fd, SymbolTableList* GLOBAL) {
     codeGenerator = new CodeGenerator();
     fout.open("out.txt");
     offset=0;
-    num_of_formal=0;
+    numberOfFormal=0;
 }
 
 void Parser::match(LEXEME_TYPE t) {
@@ -83,7 +83,7 @@ AST* Parser::parse_decl() {
         SymbolTableEntry* name;
         string varName;
         match(KW_VAR);
-        varName = token->string_value;
+        varName = token->stringValue;
         match(LX_IDENTIFIER);
         match(LX_COLON);
         type = parse_type();
@@ -100,7 +100,7 @@ AST* Parser::parse_decl() {
         string constName;
         match(KW_CONSTANT);
         AST* expr;
-        constName = token->string_value;
+        constName = token->stringValue;
         match(LX_IDENTIFIER);
         match(LX_EQ);
         expr = parse_expr();
@@ -125,11 +125,11 @@ AST* Parser::parse_decl() {
         AST* block = nullptr;
         ste_list* formals_list;
         match(KW_FUNCTION);
-        funcName = token->string_value;
+        funcName = token->stringValue;
         match(LX_IDENTIFIER);
         global->enterScope();
         offset=0;
-        num_of_formal=0;
+        numberOfFormal=0;
         formals_list = parse_formal_list();
         match(LX_COLON);
         result_type = parse_type();
@@ -144,7 +144,7 @@ AST* Parser::parse_decl() {
         }
         else fatal_error(fileDescriptor, "name already definded");
         decl->a_routine_decl.num=offset;
-        decl->a_routine_decl.num_of_formal=num_of_formal;
+        decl->a_routine_decl.num_of_formal=numberOfFormal;
         codeGenerator->generate(decl);
 
     }
@@ -154,11 +154,11 @@ AST* Parser::parse_decl() {
         ste_list* formals_list;
         AST* block;
         match(KW_PROCEDURE);
-        string funcName = token->string_value;
+        string funcName = token->stringValue;
         match(LX_IDENTIFIER);
         global->enterScope();
         offset=0;
-        num_of_formal=0;
+        numberOfFormal=0;
         formals_list = parse_formal_list();
         block = parse_block();
         global->exitScope();
@@ -170,7 +170,7 @@ AST* Parser::parse_decl() {
         }
         else fatal_error(fileDescriptor, "name already definded");
         decl->a_routine_decl.num=offset;
-        decl->a_routine_decl.num_of_formal=num_of_formal;
+        decl->a_routine_decl.num_of_formal=numberOfFormal;
         codeGenerator->generate(decl);
     }
     
@@ -243,13 +243,13 @@ ste_list* Parser::parse_formal_list_tail() {
 ste_list* Parser::parse_formals() {
     ste_list* formals = new ste_list();
     j_type type;
-    string id = token->string_value;
+    string id = token->stringValue;
     match(LX_IDENTIFIER);
     match(LX_COLON);
     type = parse_type();
     formals->head=global->getHead()->putSymbol(id,STE_VAR, type);
     formals->head->offset=offset++;
-    num_of_formal++;
+    numberOfFormal++;
     formals->next=new ste_list();
     parse_formals_tail(formals->next);
     return formals;
@@ -263,13 +263,13 @@ ste_list* Parser::parse_formals_tail(ste_list* formals) {
         formals_tail = formals;
         j_type type;
         match(LX_COMMA);
-        string id = token->string_value;
+        string id = token->stringValue;
         match(LX_IDENTIFIER);
         match(LX_COLON);
         type = parse_type();
         formals->head=global->getHead()->putSymbol(id,STE_VAR, type);
         formals->head->offset=offset++;
-        num_of_formal++;
+        numberOfFormal++;
         formals_tail->next=new ste_list();
         parse_formals_tail(formals_tail->next);
     }
@@ -281,7 +281,7 @@ AST* Parser::parse_stmt() {
     
     if (token->type == LX_IDENTIFIER) {
         string varName;
-        varName = token->string_value;
+        varName = token->stringValue;
         match(LX_IDENTIFIER);
         SymbolTableEntry* entry;
         entry = global->getMySymbol(varName);
@@ -318,7 +318,7 @@ AST* Parser::parse_stmt() {
         AST* expr_lower_bound = nullptr;
         AST* expr_upper_bound = nullptr;
         match(KW_FOR);
-        string id=token->string_value;
+        string id=token->stringValue;
         match(LX_IDENTIFIER);
         match(LX_COLON_EQ);
         SymbolTableEntry * var  = global->getMySymbol(id);
@@ -339,7 +339,7 @@ AST* Parser::parse_stmt() {
         SymbolTableEntry* entry;
         match(KW_READ);
         match(LX_LPAREN);
-        string id = token->string_value;
+        string id = token->stringValue;
         match(LX_IDENTIFIER);
         match(LX_RPAREN);
         entry = global->getMySymbol(id);
@@ -352,7 +352,7 @@ AST* Parser::parse_stmt() {
         SymbolTableEntry* entry;
         match(KW_WRITE);
         match(LX_LPAREN);
-        string id = token->string_value;
+        string id = token->stringValue;
         match(LX_IDENTIFIER);
         match(LX_RPAREN);
         entry = global->getMySymbol(id);
@@ -463,7 +463,7 @@ SymbolTableEntry* Parser::parse_var_decl() {
     SymbolTableEntry* var_decl = nullptr;
     string varName;
     match(KW_VAR);
-    varName = token->string_value;
+    varName = token->stringValue;
     match(LX_IDENTIFIER);
     match(LX_COLON);
     type = parse_type();
@@ -673,7 +673,7 @@ AST* Parser::parse_expr5() {
     AST* expr5 = nullptr;
     if (token->type == LX_IDENTIFIER) {
         ast_list* expr_id_tail;
-        string id = token->string_value;
+        string id = token->stringValue;
         match(LX_IDENTIFIER);
         SymbolTableEntry* entry;
         entry = global->getMySymbol(id);
@@ -704,18 +704,18 @@ AST* Parser::parse_expr5() {
     }
     
     else if (token->type == LX_INTEGER) {
-        int value = token->int_value;
+        int value = token->intValue;
         match(LX_INTEGER);
         expr5 = make_ast_node(AST_INTEGER, value);
     }
     else if (token->type == LX_FLOAT) {
-        float value = token->float_value;
+        float value = token->floatValue;
         match(LX_FLOAT);
         expr5 = make_ast_node(AST_FLOAT, value);
     }
     
     else if (token->type == LX_STRING) {
-        string value = token->string_value;
+        string value = token->stringValue;
         match(LX_STRING);
         expr5 = make_ast_node(AST_STRING, value.c_str());
     }

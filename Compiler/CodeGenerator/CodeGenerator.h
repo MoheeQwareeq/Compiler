@@ -18,12 +18,12 @@ class CodeGenerator {
 private:
     ofstream fout;
     int lableCount;
-    int flag_data;
-    int flag_main;
-    int flage_print_read;
-    int flage_print_write;
-    int flage_read;
-    int flage_write;
+    int flagData;
+    int flagMain;
+    int flagePrintRead;
+    int flagePrintWrite;
+    int flageRead;
+    int flageWrite;
     void gen(string );
     void gen_var_decl(AST *);
     void gen_constant(AST *);

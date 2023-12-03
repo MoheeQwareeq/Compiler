@@ -42,7 +42,7 @@ public:
     string name;
     int offset;
     ste_entry_type type;
-    SymbolTableEntry *next;
+    SymbolTableEntry * next;
     SymbolTableEntry();
     SymbolTableEntry(string entryName, ste_entry_type Type, j_type jType = TYPE_NONE);
     SymbolTableEntry(string entryName, ste_entry_type Type, int constValue = 0);
