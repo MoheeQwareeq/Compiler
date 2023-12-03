@@ -9,7 +9,6 @@
 #define Scanner_h
 
 
-#include <stdio.h>
 #include "FileDescriptor.h"
 
 using namespace std;
