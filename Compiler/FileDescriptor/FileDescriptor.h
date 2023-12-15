@@ -28,7 +28,7 @@ private:
 public:
     
     FileDescriptor();
-    FileDescriptor(string fileName);
+    FileDescriptor(string);
     string getFileName();
     bool isOpen() ;
     int getLineNum();
@@ -37,14 +37,11 @@ public:
     char getChar ();
     string getCurrLine();
     void ungetChar ();
-    void reportError (string msg);
-    void reportWarning (string msg);
+    void reportError (string);
+    void reportWarning (string);
     ~FileDescriptor();
     
 };
-
-
-
 
 
 #endif /* FileDescriptor_h */

@@ -24,11 +24,11 @@ private:
     SymbolTableList * global;
     SemanticChecker * semanticChecker;
     CodeGenerator * codeGenerator;
-    TOKEN * token;
+    Token * token;
     ofstream fout;
     int offset;
     int numberOfFormal;
-    void match(LEXEME_TYPE );
+    void match(Lexeme );
     ast_list * parse_program();
     ast_list * parse_decl_list(ast_list*);
     AST * parse_decl();

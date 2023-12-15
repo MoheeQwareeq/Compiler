@@ -7,33 +7,48 @@
 
 #include "Scanner.h"
 
-Scanner :: Scanner(FileDescriptor *fd){
+Scanner :: Scanner(FileDescriptor * fd){
     fileDescriptor = fd;
 }
 
-
-TOKEN * Scanner ::Scan(){
-    TOKEN * temp = new TOKEN;
-    LEXEME_TYPE type;
+Token * Scanner ::scan(){
+    Token * temp = new Token;
+    Lexeme type;
     
     char ch = fileDescriptor->getChar();
-    if (ch=='"')return getString(ch);
-    else if (isalpha(ch) || ch == '_')return getIdentifier(ch);
-    else if (isdigit(ch))return getNumber(ch);
-    else if (ch=='#')return skipComments(ch);
-    else if (isspace(ch))return Scan();
-    else if (isOperators(ch,type)){temp->type=type; return temp;}
-    else if (ch == EOF){temp->type=LX_EOF; return temp;}
+    if (ch=='"')
+        return getString(ch);
+    
+    else if (isalpha(ch) || ch == '_')
+        return getIdentifier(ch);
+    
+    else if (isdigit(ch))
+        return getNumber(ch);
+    
+    else if (ch=='#')
+        return skipComments(ch);
+    
+    else if (isspace(ch))
+        return scan();
+    
+    else if (isOperators(ch,type)){
+        temp->type=type;
+        return temp;
+    }
+    
+    else if (ch == EOF){
+        temp->type=LX_EOF;
+        return temp;
+    }
+    
     else {
         fileDescriptor->reportError("Lexical Error: Illegal in COMP23 programs");
         exit(EXIT_FAILURE);
     }
 }
 
-
-
-TOKEN * Scanner ::getIdentifier(char ch){
-    TOKEN* temp = new TOKEN;
+Token * Scanner ::getIdentifier(char ch){
+    Token* temp = new Token;
     string str="";
     str += ch;
     int index=0;
@@ -43,16 +58,17 @@ TOKEN * Scanner ::getIdentifier(char ch){
         ch= fileDescriptor->getChar();
     }
     
-    if(checkKeyword(str,index) )temp->type=key_type[index];
+    if(checkKeyword(str,index) )
+        temp->type=KEY_TYPE[index];
     else {
         temp->type=LX_IDENTIFIER;
         temp->stringValue=str;
-        
     }
     
     if(isDelimiter(ch)){
         fileDescriptor->ungetChar();
-        return temp;}
+        return temp;
+    }
     
     fileDescriptor->ungetChar();
     fileDescriptor->reportError("Lexical Error: Incorrect   definition  of  identifier number");
@@ -60,11 +76,8 @@ TOKEN * Scanner ::getIdentifier(char ch){
 }
 
 
-
-
-
-TOKEN * Scanner ::getNumber(char ch){
-    TOKEN* temp = new TOKEN;
+Token * Scanner ::getNumber(char ch){
+    Token* temp = new Token;
     string str="";
     
     if(isdigit(ch)){
@@ -72,11 +85,11 @@ TOKEN * Scanner ::getNumber(char ch){
         int checkOverflow;
         try {
             checkOverflow = stoi(str);
-        } catch (const out_of_range& e) {
+        }
+        catch (const out_of_range& e) {
             fileDescriptor->ungetChar();
             fileDescriptor->reportWarning("Overflow occurred");
             exit(EXIT_FAILURE);
-            
         }
         switch (ch){
             case '.':{
@@ -106,22 +119,16 @@ TOKEN * Scanner ::getNumber(char ch){
                 fileDescriptor->ungetChar();
                 fileDescriptor->reportError("Lexical Error: Incorrect   definition  of  integer number");
                 exit(EXIT_FAILURE);
-                
-                
-            }}}
+            }
+        }
+    }
     return temp;
     
 }
 
 
-
-
-
-
-
-
-TOKEN * Scanner ::getString(char ch){
-    TOKEN* temp = new TOKEN;
+Token * Scanner ::getString(char ch){
+    Token* temp = new Token;
     string str="";
     ch= fileDescriptor->getChar();
     while(ch != '"' && ch != '\n' ){
@@ -139,68 +146,54 @@ TOKEN * Scanner ::getString(char ch){
             else{
                 fileDescriptor->reportError("Lexical Error: Incorrect   definition  of  string");
                 exit(EXIT_FAILURE);
-                
             }
-            
-            
-            
         }
         default:{
             fileDescriptor->ungetChar();
             fileDescriptor->reportError("Lexical Error: Incorrect   definition  of  string");
             exit(EXIT_FAILURE);
         }
-            
     }
-    
 }
 
-
-
-
-
-
-
-TOKEN * Scanner ::skipComments(char ch){
+Token * Scanner ::skipComments(char ch){
     
     ch= fileDescriptor->getChar();
     if (ch=='#'){
         ch= fileDescriptor->getChar();
-        while(ch != '#' && ch != '\n')ch= fileDescriptor->getChar();
+        while(ch != '#' && ch != '\n')
+            ch= fileDescriptor->getChar();
         
         switch (ch){
             case '#':{
                 ch= fileDescriptor->getChar();
-                if (ch=='#') return Scan();
+                if (ch=='#')
+                    return scan();
                 else {
                     fileDescriptor->ungetChar();
                     fileDescriptor->reportError("Lexical Error: Incorrect comments");
                 }
             }
-            default:return Scan();}}
+            default:
+                return scan();
+        }
+    }
     else {
         fileDescriptor->ungetChar();
         fileDescriptor->reportError("Lexical Error: Incorrect comments");
         exit(EXIT_FAILURE);
-        
     }
 }
 
-
-
-
-
 bool Scanner ::checkKeyword(string str , int &index){
     
-    for (int i=0;i <keys;i++)
-        if(str == keyword[i]){
+    for (int i=0;i <KEYS;i++)
+        if(str == KEY_WORD[i]){
             index=i;
             return true;
         }
-    
     return false;
 }
-
 
 
 bool Scanner ::isDelimiter(char ch) {
@@ -216,28 +209,71 @@ bool Scanner ::isDelimiter(char ch) {
 }
 
 
-
-
-bool Scanner :: isOperators(char ch,LEXEME_TYPE &type){
+bool Scanner :: isOperators(char ch,Lexeme &type){
+    
     switch (ch){
-            
-        case'(':{type=LX_LPAREN;return true;}
-        case')':{type=LX_RPAREN;return true;}
-        case'+':{type=LX_PLUS;return true;}
-        case'-':{type=LX_MINUS; return true;}
-        case'*':{type=LX_STAR;return true;}
-        case'/':{type=LX_SLASH; return true;}
-        case'=':{type=LX_EQ; return true;}
-        case'.':{type=LX_DOT;return true;}
-        case';':{type=LX_SEMICOLON;return true;}
-        case'[':{type=LX_LBRACKET;return true;}
-        case']':{type=LX_RBRACKET;return true;}
-        case',':{type=LX_COMMA;return true;}
-        case'{':{type=LX_LCURLY;return true;}
-        case'}':{type=LX_RCURLY;return true;}
+        case'(':{
+            type=LX_LPAREN;
+            return true;
+        }
+        case')':{
+            type=LX_RPAREN;
+            return true;
+        }
+        case'+':{
+            type=LX_PLUS;
+            return true;
+        }
+        case'-':{
+            type=LX_MINUS;
+            return true;
+        }
+        case'*':{
+            type=LX_STAR;
+            return true;
+        }
+        case'/':{
+            type=LX_SLASH;
+            return true;
+        }
+        case'=':{
+            type=LX_EQ;
+            return true;
+        }
+        case'.':{
+            type=LX_DOT;
+            return true;
+        }
+        case';':{
+            type=LX_SEMICOLON;
+            return true;
+        }
+        case'[':{
+            type=LX_LBRACKET;
+            return true;
+        }
+        case']':{
+            type=LX_RBRACKET;
+            return true;
+        }
+        case',':{
+            type=LX_COMMA;
+            return true;
+        }
+        case'{':{
+            type=LX_LCURLY;
+            return true;
+        }
+        case'}':{
+            type=LX_RCURLY;
+            return true;
+        }
         case'!':{
             ch = fileDescriptor->getChar();
-            if (ch == '='){type=LX_NEQ; return true;}
+            if (ch == '='){
+                type=LX_NEQ;
+                return true;
+            }
             else{
                 fileDescriptor->ungetChar();
                 fileDescriptor->reportError("Lexical Error: Incorrect operators");
@@ -246,7 +282,8 @@ bool Scanner :: isOperators(char ch,LEXEME_TYPE &type){
         }
         case':':{
             ch = fileDescriptor->getChar();
-            if (ch == '=')type=LX_COLON_EQ;
+            if (ch == '=')
+                type=LX_COLON_EQ;
             else {
                 fileDescriptor->ungetChar();
                 type=LX_COLON;
@@ -255,20 +292,24 @@ bool Scanner :: isOperators(char ch,LEXEME_TYPE &type){
         }
         case'<':{
             ch = fileDescriptor->getChar();
-            if (ch == '=')type=LX_LE;
+            if (ch == '=')
+                type=LX_LE;
             else {
                 fileDescriptor->ungetChar();
                 type=LX_LT;
             }
-            return true;}
+            return true;
+        }
         case'>':{
             ch = fileDescriptor->getChar();
-            if (ch == '=')type=LX_GE;
+            if (ch == '=')
+                type=LX_GE;
             else {
                 fileDescriptor->ungetChar();
-                type=LX_GT;}
-            return true;}
-            
+                type=LX_GT;
+            }
+            return true;
+        }
     }
     return false;
 }

@@ -20,9 +20,10 @@ Parser::Parser(FileDescriptor* fd, SymbolTableList* GLOBAL) {
     numberOfFormal=0;
 }
 
-void Parser::match(LEXEME_TYPE t) {
+void Parser::match(Lexeme t) {
     if (t == token->type) {
-        token = scanner->Scan();
+        delete token;
+        token = scanner->scan();
         return;
     }
     
@@ -31,7 +32,7 @@ void Parser::match(LEXEME_TYPE t) {
 
 
 ast_list* Parser::parse() {
-    token = scanner->Scan();
+    token = scanner->scan();
     return parse_program();
 }
 
@@ -546,7 +547,7 @@ AST* Parser::parse_expr() {
 
 
 AST* Parser::parse_expr_tail(AST*expr1) {
-    LEXEME_TYPE t=token->type;
+    Lexeme t=token->type;
     if (t== KW_AND or t == KW_OR) {
         AST* rel_conj, * expr_tail;
         rel_conj = parse_rel_conj();
@@ -573,7 +574,7 @@ AST* Parser::parse_expr1() {
 
 AST* Parser::parse_expr1_tail(AST* expr2) {
     AST* expr1_tail = nullptr;
-    LEXEME_TYPE t=token->type;
+    Lexeme t=token->type;
     if (is_rel_op()) {
         AST* rel_op;
         rel_op = parse_rel_op();
@@ -603,7 +604,7 @@ AST* Parser::parse_expr2() {
 
 AST* Parser::parse_expr2_tail(AST* expr3) {
     AST* expr2_tail = nullptr;
-    LEXEME_TYPE t=token->type;
+    Lexeme t=token->type;
     
     if (t == LX_PLUS or t == LX_MINUS) {
         AST* arith_tail= nullptr;
@@ -633,7 +634,7 @@ AST* Parser::parse_expr3() {
 AST* Parser::parse_expr3_tail(AST * expr4) {
     AST* expr3_tail = nullptr;
     AST* arith_tail2=nullptr;
-    LEXEME_TYPE t=token->type;
+    Lexeme t=token->type;
     if (t == LX_STAR or t == LX_SLASH) {
         arith_tail2 = parse_arith_op_tail2();
         expr3_tail = parse_expr4();
@@ -650,7 +651,7 @@ AST* Parser::parse_expr3_tail(AST * expr4) {
 
 AST* Parser::parse_expr4() {
     AST* expr4 = nullptr;
-    LEXEME_TYPE t=token->type;
+    Lexeme t=token->type;
     AST* expr5;
     if (token->type == LX_MINUS || token->type == KW_NOT) {
         AST* unary;
@@ -832,6 +833,7 @@ bool Parser::is_rel_op() {
 
 Parser::~Parser() {
     fout.close();
+    delete token;
     delete scanner;
 }
 

@@ -7,8 +7,6 @@
 
 #include "FileDescriptor.h"
 
-
-
 FileDescriptor::FileDescriptor(string fileName){
     streamFile.open(fileName,ios::in);
     if (streamFile.is_open()){
@@ -35,42 +33,38 @@ bool FileDescriptor::isOpen(){
 
 
 int FileDescriptor::getLineNum(){
-    
     return lineNumber;
 }
 
 int FileDescriptor::getCharNum(){
-    
     return charNumber;
 }
-
-
 
 void FileDescriptor::close(){
     streamFile.close();
 }
 
-
-
 char FileDescriptor::getChar (){
-    const char* line = buffer.c_str();
+    const char * line = buffer.c_str();
     char curentChar=line[charNumber];
-    if(charNumber < strlen(line)){
-        charNumber++;}
+    if(charNumber < strlen(line))
+        charNumber++;
+    
     else {
         if (getline(streamFile, buffer)){
             buffer=buffer+"\n";
             lineNumber++;
-            charNumber=UNSET;}
+            charNumber=UNSET;
+        }
         
         else {
-            buffer += static_cast<char>(EOF);
-            curentChar=EOF;}
+            buffer += EOF;
+            curentChar=EOF;
+        }
     }
     if(!curentChar )return getChar();
     return curentChar;
 }
-
 
 
 string FileDescriptor::getCurrLine(){
@@ -82,7 +76,6 @@ void FileDescriptor::ungetChar (){
 }
 
 void FileDescriptor::reportError (string msg){
-    
     cout <<getCurrLine();
     for (int i = 0; i < charNumber-3; i++) cout << " ";
     cout << "^"<< endl;
@@ -90,7 +83,6 @@ void FileDescriptor::reportError (string msg){
     cout<<getLineNum();
     cout<<" of "+file<<endl;
     cout<<endl;
-    
 }
 
 void FileDescriptor::reportWarning(string msg){
@@ -102,7 +94,6 @@ void FileDescriptor::reportWarning(string msg){
     cout<<" of "+file<<endl;
     cout<<endl;
 }
-
 
 FileDescriptor::~FileDescriptor(){
     close();
