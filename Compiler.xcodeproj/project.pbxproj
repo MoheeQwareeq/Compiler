@@ -121,12 +121,12 @@
 			children = (
 				BDC085192A9971EF002B871D /* SymbolTableEntry.h */,
 				BDC085102A9971EE002B871D /* SymbolTableEntry.cpp */,
-				BDC085132A9971EF002B871D /* EntryList.cpp */,
 				BDC0850E2A9971EE002B871D /* EntryList.h */,
-				BDC0850C2A9971EE002B871D /* SymbolTable.cpp */,
+				BDC085132A9971EF002B871D /* EntryList.cpp */,
 				BDC085182A9971EF002B871D /* SymbolTable.h */,
-				BDC085142A9971EF002B871D /* SymbolTableList.cpp */,
+				BDC0850C2A9971EE002B871D /* SymbolTable.cpp */,
 				BDC085152A9971EF002B871D /* SymbolTableList.h */,
+				BDC085142A9971EF002B871D /* SymbolTableList.cpp */,
 			);
 			path = SymbolTable;
 			sourceTree = "<group>";

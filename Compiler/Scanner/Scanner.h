@@ -1,6 +1,6 @@
 //
 //  Scanner.h
-//  Parser
+//  Compiler
 //
 //  Created by MOHEE QWAREEQ on 09/08/2023.
 //
@@ -11,9 +11,7 @@
 
 #include "FileDescriptor.h"
 
-using namespace std;
-
-typedef enum{
+enum Lexeme{
     /* Literals */
     LX_IDENTIFIER, LX_INTEGER, LX_STRING, LX_FLOAT,
     
@@ -32,7 +30,7 @@ typedef enum{
     LX_COLON, LX_DOT, LX_SEMICOLON, LX_COMMA, LX_COLON_EQ,
     LX_PLUS, LX_MINUS, LX_STAR, LX_SLASH,
     LX_EQ, LX_NEQ, LX_LT, LX_LE, LX_GT, LX_GE, LX_EOF
-} Lexeme;
+};
 
 const int KEYS = 32; /* number of keywords */
 
@@ -67,13 +65,12 @@ private:
     Token * getIdentifier(char);
     Token * getNumber(char);
     Token * getString(char);
-    Token * skipComments(char);//
+    Token * skipComments(char);
     bool checkKeyword(string, int &);
     bool isOperators(char, Lexeme &);
     bool isDelimiter(char);
     
 public:
-    Scanner();
     Scanner (FileDescriptor *);
     Token * scan();
 };

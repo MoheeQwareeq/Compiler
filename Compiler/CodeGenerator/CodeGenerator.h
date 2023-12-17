@@ -16,6 +16,7 @@
 class CodeGenerator {
     
 private:
+    
     ofstream fout;
     int lableCount;
     int flagData;
@@ -25,27 +26,27 @@ private:
     int flageRead;
     int flageWrite;
     void gen(string );
-    void gen_var_decl(AST *);
-    void gen_constant(AST *);
-    void gen_routine(AST *);
-    void gen_block(AST *);
-    void gen_stmt(AST * );
-    void gen_opreation(AST *);
-    void gen_unary_opreation(AST *);
-    void gen_assign(AST *);
-    void gen_var(AST *);
-    void gen_lit(AST *);
-    void gen_if(AST *);
-    void gen_while(AST *);
-    void gen_for(AST *);
-    void gen_call(AST *);
-    void gen_read(AST *);
-    void gen_write(AST *);
-    void gen_return(AST *);
-    void gen_integer_to_float(AST *);
-    void gen_float_to_integer(AST *);
+    void genVarDecl(AST *);
+    void genConstant(AST *);
+    void genRoutine(AST *);
+    void genBlock(AST *);
+    void genStmt(AST * );
+    void genOpreation(AST *);
+    void genUnaryOpreation(AST *);
+    void genAssign(AST *);
+    void genVar(AST *);
+    void genLit(AST *);
+    void genIf(AST *);
+    void genWhile(AST *);
+    void genFor(AST *);
+    void genCall(AST *);
+    void genRead(AST *);
+    void genWrite(AST *);
+    void genReturn(AST *);
+    void genIntegerToFloat(AST *);
+    void genFloatToInteger(AST *);
     string makeLabel();
-    string floatToIEEE754HexString(float value);
+    string floatToIeeeHexString(float);
     
 public:
     

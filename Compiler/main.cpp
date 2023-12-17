@@ -12,10 +12,9 @@
 int main() {
     string fileName = "program.COMP23";
     FileDescriptor fileDescriptor(fileName);
-    SymbolTableList * global=new SymbolTableList(false); //fold case is true
-    Parser  parser(&fileDescriptor,global);
-    ast_list * s=parser.parse();
-    parser.print(s);
+    SymbolTableList global(false); //fold case is false
+    Parser  parser(fileDescriptor,global);
+    parser.print(parser.parse());
     cout<<"Your code has been successfully compiled without any errors"<<endl;
     cout<<endl;
 }

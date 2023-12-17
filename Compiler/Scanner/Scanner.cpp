@@ -1,42 +1,45 @@
 //
 //  Scanner.cpp
-//  Parser
+//  Compiler
 //
 //  Created by MOHEE QWAREEQ on 09/08/2023.
 //
 
 #include "Scanner.h"
 
-Scanner :: Scanner(FileDescriptor * fd){
-    fileDescriptor = fd;
+
+Scanner :: Scanner(FileDescriptor * fileDescriptor){
+    this->fileDescriptor = fileDescriptor;
 }
 
 Token * Scanner ::scan(){
-    Token * temp = new Token;
+    Token * temp;
     Lexeme type;
     
     char ch = fileDescriptor->getChar();
-    if (ch=='"')
+    if (ch == '"')
         return getString(ch);
     
-    else if (isalpha(ch) || ch == '_')
+    else if (isalpha(ch) or ch == '_')
         return getIdentifier(ch);
     
     else if (isdigit(ch))
         return getNumber(ch);
     
-    else if (ch=='#')
+    else if (ch == '#')
         return skipComments(ch);
     
     else if (isspace(ch))
         return scan();
     
     else if (isOperators(ch,type)){
+        temp = new Token;
         temp->type=type;
         return temp;
     }
     
     else if (ch == EOF){
+        temp = new Token;
         temp->type=LX_EOF;
         return temp;
     }
@@ -48,11 +51,11 @@ Token * Scanner ::scan(){
 }
 
 Token * Scanner ::getIdentifier(char ch){
-    Token* temp = new Token;
+    Token * temp = new Token;
     string str="";
     str += ch;
     int index=0;
-    ch= fileDescriptor->getChar();
+    ch = fileDescriptor->getChar();
     while(isalpha(ch) || isdigit(ch) || ch == '_'){
         str += ch;
         ch= fileDescriptor->getChar();
@@ -72,73 +75,80 @@ Token * Scanner ::getIdentifier(char ch){
     
     fileDescriptor->ungetChar();
     fileDescriptor->reportError("Lexical Error: Incorrect   definition  of  identifier number");
+    delete temp;
     exit(EXIT_FAILURE);
 }
 
 
 Token * Scanner ::getNumber(char ch){
-    Token* temp = new Token;
-    string str="";
+    Token* temp;
+    string str = "";
     
-    if(isdigit(ch)){
-        while (isdigit(ch)) {str += ch;ch= fileDescriptor->getChar();  }
-        int checkOverflow;
-        try {
-            checkOverflow = stoi(str);
-        }
-        catch (const out_of_range& e) {
+    while (isdigit(ch)) {
+        str += ch;
+        ch= fileDescriptor->getChar();
+    }
+    int checkOverflow;
+    try {
+        checkOverflow = stoi(str);
+    }
+    catch (const out_of_range& e) {
+        fileDescriptor->ungetChar();
+        fileDescriptor->reportWarning("Overflow occurred");
+        exit(EXIT_FAILURE);
+    }
+    switch (ch){
+        case '.':{
+            str += ch;
+            ch = fileDescriptor->getChar();
+            if(isdigit(ch)){
+                while(isdigit(ch)){
+                    str += ch;
+                    ch = fileDescriptor->getChar();
+                }
+                if(isDelimiter(ch)){
+                    temp = new Token;
+                    fileDescriptor->ungetChar();
+                    temp->type=LX_FLOAT;
+                    temp->floatValue = stof(str);
+                    return temp;
+                }
+            }
+            
             fileDescriptor->ungetChar();
-            fileDescriptor->reportWarning("Overflow occurred");
+            fileDescriptor->reportError("Lexical Error: Incorrect   definition  of  floating number");
             exit(EXIT_FAILURE);
         }
-        switch (ch){
-            case '.':{
-                str += ch;
-                ch = fileDescriptor->getChar();
-                if(isdigit(ch)){
-                    while(isdigit(ch)){ str += ch;  ch = fileDescriptor->getChar(); }
-                    if(isDelimiter(ch)){
-                        fileDescriptor->ungetChar();
-                        temp->type=LX_FLOAT;
-                        temp->floatValue =   stof(str);
-                        return temp;
-                    }
-                }
-                
+            
+        default:{
+            if(isDelimiter(ch)){
+                temp = new Token;
                 fileDescriptor->ungetChar();
-                fileDescriptor->reportError("Lexical Error: Incorrect   definition  of  floating number");
-                exit(EXIT_FAILURE);
+                temp->type=LX_INTEGER;
+                temp->intValue = stoi(str);
+                return temp;
             }
-                
-            default:{
-                if(isDelimiter(ch)){
-                    fileDescriptor->ungetChar();
-                    temp->type=LX_INTEGER;
-                    temp->intValue = stoi(str);
-                    return temp;}
-                fileDescriptor->ungetChar();
-                fileDescriptor->reportError("Lexical Error: Incorrect   definition  of  integer number");
-                exit(EXIT_FAILURE);
-            }
+            fileDescriptor->ungetChar();
+            fileDescriptor->reportError("Lexical Error: Incorrect   definition  of  integer number");
+            exit(EXIT_FAILURE);
         }
     }
-    return temp;
-    
 }
 
 
 Token * Scanner ::getString(char ch){
-    Token* temp = new Token;
-    string str="";
+    Token * temp;
+    string str = "";
     ch= fileDescriptor->getChar();
     while(ch != '"' && ch != '\n' ){
         str += ch;
-        ch= fileDescriptor->getChar();}
+        ch = fileDescriptor->getChar();}
     
     switch (ch){
         case '"':{
             ch= fileDescriptor->getChar();
             if(isDelimiter(ch)){
+                temp = new Token;
                 fileDescriptor->ungetChar();
                 temp->type=LX_STRING;
                 temp->stringValue=str;
@@ -159,15 +169,15 @@ Token * Scanner ::getString(char ch){
 Token * Scanner ::skipComments(char ch){
     
     ch= fileDescriptor->getChar();
-    if (ch=='#'){
+    if (ch == '#'){
         ch= fileDescriptor->getChar();
         while(ch != '#' && ch != '\n')
             ch= fileDescriptor->getChar();
         
         switch (ch){
             case '#':{
-                ch= fileDescriptor->getChar();
-                if (ch=='#')
+                ch = fileDescriptor->getChar();
+                if (ch == '#')
                     return scan();
                 else {
                     fileDescriptor->ungetChar();
@@ -186,10 +196,9 @@ Token * Scanner ::skipComments(char ch){
 }
 
 bool Scanner ::checkKeyword(string str , int &index){
-    
-    for (int i=0;i <KEYS;i++)
+    for (int i = 0;i <KEYS;i++)
         if(str == KEY_WORD[i]){
-            index=i;
+            index = i;
             return true;
         }
     return false;
@@ -213,65 +222,65 @@ bool Scanner :: isOperators(char ch,Lexeme &type){
     
     switch (ch){
         case'(':{
-            type=LX_LPAREN;
+            type = LX_LPAREN;
             return true;
         }
         case')':{
-            type=LX_RPAREN;
+            type = LX_RPAREN;
             return true;
         }
         case'+':{
-            type=LX_PLUS;
+            type = LX_PLUS;
             return true;
         }
         case'-':{
-            type=LX_MINUS;
+            type = LX_MINUS;
             return true;
         }
         case'*':{
-            type=LX_STAR;
+            type = LX_STAR;
             return true;
         }
         case'/':{
-            type=LX_SLASH;
+            type = LX_SLASH;
             return true;
         }
         case'=':{
-            type=LX_EQ;
+            type = LX_EQ;
             return true;
         }
         case'.':{
-            type=LX_DOT;
+            type = LX_DOT;
             return true;
         }
         case';':{
-            type=LX_SEMICOLON;
+            type = LX_SEMICOLON;
             return true;
         }
         case'[':{
-            type=LX_LBRACKET;
+            type = LX_LBRACKET;
             return true;
         }
         case']':{
-            type=LX_RBRACKET;
+            type = LX_RBRACKET;
             return true;
         }
         case',':{
-            type=LX_COMMA;
+            type = LX_COMMA;
             return true;
         }
         case'{':{
-            type=LX_LCURLY;
+            type = LX_LCURLY;
             return true;
         }
         case'}':{
-            type=LX_RCURLY;
+            type = LX_RCURLY;
             return true;
         }
         case'!':{
             ch = fileDescriptor->getChar();
             if (ch == '='){
-                type=LX_NEQ;
+                type = LX_NEQ;
                 return true;
             }
             else{
@@ -283,10 +292,10 @@ bool Scanner :: isOperators(char ch,Lexeme &type){
         case':':{
             ch = fileDescriptor->getChar();
             if (ch == '=')
-                type=LX_COLON_EQ;
+                type = LX_COLON_EQ;
             else {
                 fileDescriptor->ungetChar();
-                type=LX_COLON;
+                type = LX_COLON;
             }
             return true;
         }
@@ -296,17 +305,17 @@ bool Scanner :: isOperators(char ch,Lexeme &type){
                 type=LX_LE;
             else {
                 fileDescriptor->ungetChar();
-                type=LX_LT;
+                type = LX_LT;
             }
             return true;
         }
         case'>':{
             ch = fileDescriptor->getChar();
             if (ch == '=')
-                type=LX_GE;
+                type = LX_GE;
             else {
                 fileDescriptor->ungetChar();
-                type=LX_GT;
+                type = LX_GT;
             }
             return true;
         }

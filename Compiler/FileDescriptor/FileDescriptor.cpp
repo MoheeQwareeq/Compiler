@@ -1,33 +1,37 @@
 //
 //  FileDescriptor.cpp
-//  Scanner
+//  Compiler
 //
 //  Created by MOHEE QWAREEQ on 09/08/2023.
 //
 
 #include "FileDescriptor.h"
 
+
 FileDescriptor::FileDescriptor(string fileName){
-    streamFile.open(fileName,ios::in);
-    if (streamFile.is_open()){
-        file=fileName;
-        cout<<"Start Runing ... "+file+"\n"<<endl;
-        if (getline(streamFile, buffer)){
-            buffer=buffer+"\n";
-            lineNumber=SET;
-            charNumber=UNSET;}
+    file.open(fileName,ios::in);
+    if (file.is_open()){
+        this->fileName = fileName;
+        cout<<"Start Runing ... "+fileName+"\n"<<endl;
+        if (getline(file, buffer)){
+            buffer = buffer + "\n";
+            lineNumber = SET;
+            charNumber = UNSET;
+        }
     }
-    else cout<<"File not open \n";
+    else
+        cout<<"File not open \n";
 }
 
 
 string FileDescriptor::getFileName(){
-    return file;
+    return fileName;
 }
 
 
 bool FileDescriptor::isOpen(){
-    if (streamFile) return true;
+    if (file)
+        return true;
     return false;
 }
 
@@ -41,25 +45,25 @@ int FileDescriptor::getCharNum(){
 }
 
 void FileDescriptor::close(){
-    streamFile.close();
+    file.close();
 }
 
 char FileDescriptor::getChar (){
     const char * line = buffer.c_str();
-    char curentChar=line[charNumber];
+    char curentChar = line[charNumber];
     if(charNumber < strlen(line))
         charNumber++;
     
     else {
-        if (getline(streamFile, buffer)){
-            buffer=buffer+"\n";
+        if (getline(file, buffer)){
+            buffer = buffer+"\n";
             lineNumber++;
-            charNumber=UNSET;
+            charNumber = UNSET;
         }
         
         else {
             buffer += EOF;
-            curentChar=EOF;
+            curentChar = EOF;
         }
     }
     if(!curentChar )return getChar();
@@ -81,7 +85,7 @@ void FileDescriptor::reportError (string msg){
     cout << "^"<< endl;
     cout<<msg+" on line ";
     cout<<getLineNum();
-    cout<<" of "+file<<endl;
+    cout<<" of " + fileName<<endl;
     cout<<endl;
 }
 
@@ -89,12 +93,12 @@ void FileDescriptor::reportWarning(string msg){
     cout <<getCurrLine();
     for (int i = 0; i < charNumber-3; i++) cout << " ";
     cout << "^"<< endl;
-    cout<<"Warnning: "+msg+" on line ";
+    cout<< "Warnning: " + msg + " on line ";
     cout<<getLineNum();
-    cout<<" of "+file<<endl;
+    cout<<" of " + fileName<<endl;
     cout<<endl;
 }
 
 FileDescriptor::~FileDescriptor(){
-    close();
+    file.close();
 }

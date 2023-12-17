@@ -1,6 +1,6 @@
 //
 //  EntryList.h
-//  Symbol Table
+//  Compiler
 //
 //  Created by MOHEE QWAREEQ on 05/08/2023.
 //
@@ -9,21 +9,22 @@
 #define EntryList_h
 #include "SymbolTableEntry.h"
 
-class EntryList
-{
+class EntryList{
 private:
+    
     int counter;
-    SymbolTableEntry *head;
+    SymbolTableEntry * head;
+    
 public:
     
     EntryList();
-    SymbolTableEntry * findEntry(string entryName);
-    SymbolTableEntry * addEntry(string entryName, ste_entry_type Type, j_type jType = TYPE_NONE);
-    SymbolTableEntry * addEntry(string entryName, ste_entry_type Type, int constValue = 0);
-    void printAll(ofstream &fout);
+    SymbolTableEntry * findEntry(string);
+    SymbolTableEntry * addEntry(string, STE_ENTRY_TYPE,J_TYPE = TYPE_NONE,int = 0);
+    void printAll(ofstream &);
     int count();
     void clear();
     ~EntryList();
+    
 };
 
 #endif /* EntryList_h */

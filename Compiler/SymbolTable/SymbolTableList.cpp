@@ -1,6 +1,6 @@
 //
 //  SymbolTableList.cpp
-//  Parser
+//  Compiler
 //
 //  Created by MOHEE QWAREEQ on 12/08/2023.
 //
@@ -10,12 +10,16 @@
 
 
 SymbolTableList::SymbolTableList() {
+    fout.open("symbol tabel.txt");
+
     head = new SymbolTable();
     head->next=NULL;
     count = 0;
 }
 
 SymbolTableList::SymbolTableList(bool foldCase) {
+    fout.open("symbol tabel.txt");
+
     head = new SymbolTable(foldCase);
     head->next=NULL;
     count = 0;
@@ -26,43 +30,47 @@ SymbolTable* SymbolTableList::getHead() {
 }
 
 void SymbolTableList::enterScope() {
-    SymbolTable* scope = new SymbolTable();
+    SymbolTable * scope = new SymbolTable();
     scope->next = head;
     head = scope;
     count++;
 }
 
 void SymbolTableList::exitScope() {
+    SymbolTable * scope = head;
+    scope->printAll(fout);
     head = head->next;
     count--;
+   //delete scope;
 }
 
 
-ofstream fout("out.txt");
 void SymbolTableList::printTable() {
-    SymbolTable* tmp = head;
-    int counterr = 0;
-    while (tmp != nullptr) {
-        cout << "Table[" << counterr << "]" << endl;
+    SymbolTable * tmp = head;
+    int counter = 0;
+    while (tmp) {
         tmp->printAll(fout);
         tmp = tmp->next;
-        counterr++;
-        cout << endl;
-        
+        counter++;
     }
 }
 
 
-SymbolTableEntry* SymbolTableList::getMySymbol(string name) {
+SymbolTableEntry * SymbolTableList::getMySymbol(string name) {
     SymbolTable* st;
     SymbolTableEntry* ste;
     st = head;
-    while (st != nullptr) {
+    while (st) {
         ste = st->getSymbol(name);
         if (ste) return ste;
-        else {
+        else
             st = st->next;
-        }
+        
     }
     return nullptr;
+}
+
+
+SymbolTableList::~SymbolTableList(){
+    
 }

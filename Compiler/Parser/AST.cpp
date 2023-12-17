@@ -1,6 +1,6 @@
 //
 //  AST.cpp
-//  Parser
+//  Compiler
 //
 //  Created by MOHEE QWAREEQ on 08/08/2023.
 //
@@ -17,9 +17,10 @@ void p_a_n (ofstream &fout, AST *, int);
 void print_ast_list (ofstream &fout, ast_list *, string, int);
 void print_ste_list (ofstream &fout, ste_list *,string,string, int);
 
-void fatal_error(FileDescriptor *fd , string message) {
+void fatalError(FileDescriptor *fd , string message) {
     fd->reportError("Syntax Error: "+message);
     cout<<endl;
+    remove("symbol tabel.txt");
     remove("out.txt");
     remove("assmbly.asm");
     exit(EXIT_FAILURE);
@@ -27,7 +28,7 @@ void fatal_error(FileDescriptor *fd , string message) {
 
 
 
-AST * make_ast_node (AST_type type, ...){
+AST * makeAstNode (AST_type type, ...){
     AST *n = (AST *)malloc(sizeof(AST));
     if (n == nullptr) return nullptr;
     n->type = type;
@@ -37,7 +38,7 @@ AST * make_ast_node (AST_type type, ...){
     switch (type) {
         case AST_VAR_DECL:
             n->a_var_decl.name = va_arg (ap, SymbolTableEntry *);
-            n->a_var_decl.type = va_arg (ap, j_type);
+            n->a_var_decl.type = va_arg (ap, J_TYPE);
             break;
             
         case AST_CONST_DECL:
@@ -48,7 +49,7 @@ AST * make_ast_node (AST_type type, ...){
         case AST_ROUTINE_DECL:
             n->a_routine_decl.name = va_arg (ap, SymbolTableEntry *);
             n->a_routine_decl.formals = va_arg (ap, ste_list *);
-            n->a_routine_decl.result_type = va_arg (ap, j_type );
+            n->a_routine_decl.resultType = va_arg (ap, J_TYPE );
             n->a_routine_decl.body = va_arg (ap,AST *);
             break;
             
@@ -70,8 +71,8 @@ AST * make_ast_node (AST_type type, ...){
             
         case AST_FOR:
             n->a_for.var = va_arg (ap, SymbolTableEntry *);
-            n->a_for.lower_bound = va_arg(ap, AST *);
-            n->a_for.upper_bound = va_arg (ap, AST *);
+            n->a_for.lowerBound = va_arg(ap, AST *);
+            n->a_for.upperBound = va_arg (ap, AST *);
             n->a_for.body = va_arg (ap, AST *);
             break;
             
@@ -148,16 +149,16 @@ AST * make_ast_node (AST_type type, ...){
 }
 
 
-float eval_ast_expr (ofstream  &fout,FileDescriptor*fileDescriptor,AST *n)
+float evalAstExpr (ofstream  &fout,FileDescriptor*fileDescriptor,AST *n)
 {
-    if (n == nullptr) fatal_error (fileDescriptor,"invalid expretione");
+    if (n == nullptr) fatalError (fileDescriptor,"invalid expretione");
     
     switch (n->type){
         case AST_VAR:
             if (n->a_var.var->type == STE_CONST)
-                return (SymbolTableEntry::ste_const_value(n->a_var.var));
+                return (SymbolTableEntry::steConstValue(n->a_var.var));
             else
-                fatal_error (fileDescriptor,"Cannot use variables in constant expressions");
+                fatalError (fileDescriptor,"Cannot use variables in constant expressions");
             return (0);
         case AST_INTEGER:
             return (n->a_integer.int_value);
@@ -165,22 +166,22 @@ float eval_ast_expr (ofstream  &fout,FileDescriptor*fileDescriptor,AST *n)
             return (n->a_float.float_value);
             
         case AST_TIMES:
-            return (eval_ast_expr (fout,fileDescriptor,n->a_binary_op.larg)
-                    * eval_ast_expr (fout,fileDescriptor, n->a_binary_op.rarg));
+            return (evalAstExpr (fout,fileDescriptor,n->a_binary_op.larg)
+                    * evalAstExpr (fout,fileDescriptor, n->a_binary_op.rarg));
         case AST_DIVIDE:
-            return (eval_ast_expr (fout,fileDescriptor, n->a_binary_op.larg)
-                    / eval_ast_expr (fout,fileDescriptor,n->a_binary_op.rarg));
+            return (evalAstExpr (fout,fileDescriptor, n->a_binary_op.larg)
+                    / evalAstExpr (fout,fileDescriptor,n->a_binary_op.rarg));
         case AST_PLUS:
-            return (eval_ast_expr (fout,fileDescriptor,n->a_binary_op.larg)
-                    + eval_ast_expr (fout,fileDescriptor, n->a_binary_op.rarg));
+            return (evalAstExpr (fout,fileDescriptor,n->a_binary_op.larg)
+                    + evalAstExpr (fout,fileDescriptor, n->a_binary_op.rarg));
         case AST_MINUS:
-            return (eval_ast_expr (fout,fileDescriptor, n->a_binary_op.larg)
-                    -eval_ast_expr (fout, fileDescriptor,n->a_binary_op.rarg));
+            return (evalAstExpr (fout,fileDescriptor, n->a_binary_op.larg)
+                    -evalAstExpr (fout, fileDescriptor,n->a_binary_op.rarg));
             
         case AST_UMINUS:
-            return (- eval_ast_expr (fout,fileDescriptor, n->a_unary_op.arg));
+            return (- evalAstExpr (fout,fileDescriptor, n->a_unary_op.arg));
         default:
-            fatal_error (fileDescriptor,"invalid expretione");
+            fatalError (fileDescriptor,"invalid expretione");
             return (0);
     }
 }
@@ -188,7 +189,7 @@ float eval_ast_expr (ofstream  &fout,FileDescriptor*fileDescriptor,AST *n)
 
 
 
-void print_ast_node (ofstream &fout, AST *n)
+void printAstNode (ofstream &fout, AST *n)
 {
     p_a_n (fout, n, 0);
 }
@@ -199,30 +200,30 @@ void p_a_n (ofstream &fout, AST *n, int d){
     {
             // new page 6
         case AST_VAR_DECL:
-            fout << "var " << SymbolTableEntry::ste_name(n->a_var_decl.name) << ": "
-            << type_names[n->a_var_decl.type] << ";";
+            fout << "var " << SymbolTableEntry::steName(n->a_var_decl.name) << ": "
+            << TYPE_NAMES[n->a_var_decl.type] << ";";
             nl_indent (fout, d);
             break;
         case AST_CONST_DECL:
-            fout << "constant " << SymbolTableEntry::ste_name(n->a_const_decl.name) << " = "
+            fout << "constant " << SymbolTableEntry::steName(n->a_const_decl.name) << " = "
             << n->a_const_decl.value << ";";
             nl_indent (fout, d);
             break;
         case AST_ROUTINE_DECL:
         {
-            if (n->a_routine_decl.result_type == TYPE_NONE)
-                fout <<"\n\n\nprocedure " << SymbolTableEntry::ste_name(n->a_routine_decl.name) << " (";
+            if (n->a_routine_decl.resultType == TYPE_NONE)
+                fout <<"\n\n\nprocedure " << SymbolTableEntry::steName(n->a_routine_decl.name) << " (";
             else
-                fout << "\n\n\nfunction " << SymbolTableEntry::ste_name(n->a_routine_decl.name) << " (";
+                fout << "\n\n\nfunction " << SymbolTableEntry::steName(n->a_routine_decl.name) << " (";
             print_ste_list (fout, n->a_routine_decl.formals, "", ", ", -1);
             
             
             
-            if (n->a_routine_decl.result_type == TYPE_NONE){
+            if (n->a_routine_decl.resultType == TYPE_NONE){
                 fout << ")";
                 nl_indent (fout, d + 2);
             } else{
-                fout << ") : " << type_names[n->a_routine_decl.result_type];
+                fout << ") : " << TYPE_NAMES[n->a_routine_decl.resultType];
                 nl_indent (fout, d + 2);
             }
             p_a_n (fout, n->a_routine_decl.body, d + 2);
@@ -231,7 +232,7 @@ void p_a_n (ofstream &fout, AST *n, int d){
             break;
         }
         case AST_ASSIGN:
-            fout << SymbolTableEntry::ste_name(n->a_assign.lhs) << " := ";
+            fout << SymbolTableEntry::steName(n->a_assign.lhs) << " := ";
             p_a_n (fout, n->a_assign.rhs, d);
             break;
         case AST_IF:
@@ -257,10 +258,10 @@ void p_a_n (ofstream &fout, AST *n, int d){
             fout << "od";
             break;
         case AST_FOR:
-            fout << "for " << SymbolTableEntry::ste_name(n->a_for.var) << " = ";
-            p_a_n (fout, n->a_for.lower_bound, d);
+            fout << "for " << SymbolTableEntry::steName(n->a_for.var) << " = ";
+            p_a_n (fout, n->a_for.lowerBound, d);
             fout << " to ";
-            p_a_n (fout, n->a_for.upper_bound, d);
+            p_a_n (fout, n->a_for.upperBound, d);
             fout << " do";
             nl_indent (fout, d + 2);
             p_a_n (fout, n->a_for.body, d + 2);
@@ -268,13 +269,13 @@ void p_a_n (ofstream &fout, AST *n, int d){
             fout << "od";
             break;
         case AST_READ:
-            fout << "read (" << SymbolTableEntry::ste_name(n->a_read.var) << ")";
+            fout << "read (" << SymbolTableEntry::steName(n->a_read.var) << ")";
             break;
         case AST_WRITE:
-            fout << "write (" << SymbolTableEntry::ste_name(n->a_read.var) << ")";
+            fout << "write (" << SymbolTableEntry::steName(n->a_read.var) << ")";
             break;
         case AST_CALL:
-            fout << SymbolTableEntry::ste_name(n->a_call.callee) << " (";
+            fout << SymbolTableEntry::steName(n->a_call.callee) << " (";
             print_ast_list (fout, n->a_call.arg_list, ", ", -1);
             fout << ")";
             break;
@@ -292,7 +293,7 @@ void p_a_n (ofstream &fout, AST *n, int d){
             fout << ")";
             break;
         case AST_VAR:
-            fout << SymbolTableEntry::ste_name(n->a_var.var);
+            fout << SymbolTableEntry::steName(n->a_var.var);
             break;
         case AST_INTEGER:
             fout << n->a_integer.int_value;
@@ -395,7 +396,7 @@ void nl_indent (ofstream &fout, int d)
 
 void print_ste_list (ofstream &fout, ste_list *L, string prefix, string sep, int d) {
     for ( ; L->next != nullptr;  L=L->next) {
-        fout << prefix << SymbolTableEntry::ste_name(L->head) << " : " << type_names[SymbolTableEntry::ste_var_type(L->head)];
+        fout << prefix << SymbolTableEntry::steName(L->head) << " : " << TYPE_NAMES[SymbolTableEntry::steVarType(L->head)];
         if (L->next->next || d >= 0) fout << sep;
         if (d >= 0) nl_indent (fout, d);
     }

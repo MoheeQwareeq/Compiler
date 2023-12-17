@@ -15,16 +15,18 @@
 class SemanticChecker {
     
 private:
-    FileDescriptor* fileDescriptor;
+    
+    FileDescriptor * fileDescriptor;
     void semanticError(FileDescriptor * , string );
     void semanticWarning(FileDescriptor * , string );
-    j_type expression_type (AST *);
-    bool routine_contain_enough_return(AST * );
-    void cheak_all_return_type(AST *,j_type);
+    J_TYPE expressionType (AST *);
+    bool routineContainEnoughReturn(AST * );
+    void cheakAllReturnType(AST *,J_TYPE);
 
 public:
-    SemanticChecker(FileDescriptor* );
-    void check_Statement (AST * , j_type );
+    
+    SemanticChecker(FileDescriptor *);
+    void checkStatement (AST * , J_TYPE);
     
 };
 

@@ -1,6 +1,6 @@
 //
 //  AST.h
-//  Parser
+//  Compiler
 //
 //  Created by MOHEE QWAREEQ on 08/08/2023.
 //
@@ -19,7 +19,7 @@ struct ast_list      //node to builde ast trees
 {
     AST * head;        // pointer to  a tree
     ast_list   * next; // this is the next pointer that you use typically in the list
-    j_type type;
+    J_TYPE type;
 };
 
 
@@ -76,8 +76,8 @@ struct AST{
     union {  /* The fields depend on a node's type */
         
         struct{
-            SymbolTableEntry *name; /* Variable's symbol table entry */
-            j_type type; /* Declared type of var*iable */
+            SymbolTableEntry * name; /* Variable's symbol table entry */
+            J_TYPE type; /* Declared type of var*iable */
         } a_var_decl;
         
         
@@ -90,71 +90,71 @@ struct AST{
         struct{
             SymbolTableEntry * name; /* Routine's symbol table entry */
             ste_list * formals; /* List of formal parameters */
-            j_type result_type; /* Type of result (none_type for procedures) */
+            J_TYPE resultType; /* Type of result (none_type for procedures) */
             AST * body; /* Body of routine */
             int num;
-            int num_of_formal;
+            int numOfFormal;
         } a_routine_decl;
         
         
         struct{
             SymbolTableEntry  * lhs; /* Target of assignment */
             AST * rhs; /* Right side of assignment */
-            j_type rightType; //its real type that in right
+            J_TYPE rightType; //its real type that in right
         } a_assign;
         
         
         struct{
-            AST *predicate; /* Predicate */
-            AST *conseq; /* Consequent */
-            AST *altern; /* Alternative (nullptr for if-then stmt) */
+            AST * predicate; /* Predicate */
+            AST * conseq; /* Consequent */
+            AST * altern; /* Alternative (nullptr for if-then stmt) */
         } a_if;
         
         
         struct{
-            AST *predicate; /* Predicate */
-            AST *body; /* Body */
+            AST * predicate; /* Predicate */
+            AST * body; /* Body */
         } a_while;
         
         struct {
-            SymbolTableEntry *var; /* Index variable */
-            AST *lower_bound; /* Lower iteration bound */
-            AST *upper_bound; /* Upper iteration bound */
-            AST *body; /* Body */
+            SymbolTableEntry * var; /* Index variable */
+            AST * lowerBound; /* Lower iteration bound */
+            AST * upperBound; /* Upper iteration bound */
+            AST * body; /* Body */
         }a_for;
         
         
         struct{
-            SymbolTableEntry *var; /* Target variable */
+            SymbolTableEntry * var; /* Target variable */
         } a_read;
         
         
         struct{
-            SymbolTableEntry *var; /* Source variable */
+            SymbolTableEntry * var; /* Source variable */
         } a_write;
         
         
         struct{
-            SymbolTableEntry *callee; /* Symbol table entry for function */
+            SymbolTableEntry * callee; /* Symbol table entry for function */
             ast_list * arg_list; /* List of actual arguments */
         } a_call;
         
         
         struct{
-            ste_list *vars; /* Symbol table entries of local variables */
-            ast_list *stmts; /* Statements in block */
+            ste_list * vars; /* Symbol table entries of local variables */
+            ast_list * stmts; /* Statements in block */
         } a_block;
         
         
         struct{
-            AST *expr; /* Return value */
-            j_type realReturnType; //its real type that return
-            j_type expectReturnType; //its real type that return
+            AST * expr; /* Return value */
+            J_TYPE realReturnType; //its real type that return
+            J_TYPE expectReturnType; //its real type that return
         } a_return;
         
         
         struct{
-            SymbolTableEntry *var; /* Symbol table entry for variable */
+            SymbolTableEntry * var; /* Symbol table entry for variable */
         } a_var;
         
         
@@ -174,17 +174,17 @@ struct AST{
         
         
         struct{
-            AST *arg; /* Argument */
-            j_type type;
+            AST * arg; /* Argument */
+            J_TYPE type;
         } a_unary_op;
         
         
         struct{
-            AST *larg; /* Argument 1 */
-            AST *rarg; /* Argument 2 */
-            j_type l_type;
-            j_type r_type;
-            j_type rel_type;
+            AST * larg; /* Argument 1 */
+            AST * rarg; /* Argument 2 */
+            J_TYPE l_type;
+            J_TYPE r_type;
+            J_TYPE rel_type;
         } a_binary_op;
         
         
@@ -192,21 +192,19 @@ struct AST{
             float float_value;
         } a_float;
         
-        
     };// union
-    
     
 }; // AST structure
 
 
 
 /* Externally-visible functions: */
-AST * make_ast_node (AST_type type, ...);
-void print_ast_node (ofstream &fout, AST *);
-ast_list * cons_ast (AST *, ast_list *);
-ste_list * cons_ste (SymbolTableEntry *, ste_list *);
-float eval_ast_expr (ofstream & fout,FileDescriptor*,AST *);
-void fatal_error(FileDescriptor *, string ) ;
+AST * makeAstNode (AST_type type, ...);
+void printAstNode (ofstream &fout, AST *);
+ast_list * consAst (AST *, ast_list *);
+ste_list * consSte (SymbolTableEntry *, ste_list *);
+float evalAstExpr (ofstream & fout,FileDescriptor*,AST *);
+void fatalError(FileDescriptor *, string ) ;
 
 
 

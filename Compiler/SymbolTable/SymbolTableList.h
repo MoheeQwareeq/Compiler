@@ -1,6 +1,6 @@
 //
 //  SymbolTableList.h
-//  Parser
+//  Compiler
 //
 //  Created by MOHEE QWAREEQ on 12/08/2023.
 //
@@ -12,18 +12,20 @@
 
 class SymbolTableList{
 private:
-    SymbolTable* head;
+    ofstream fout;
+    SymbolTable * head;
     int count;
     
 public:
     SymbolTableList();
-    SymbolTableList(bool foldCase);
+    SymbolTableList(bool);
     void enterScope();
     void exitScope();
     void printTable();
     SymbolTable* getHead();
-    SymbolTableEntry* getMySymbol(string name);
-    
+    SymbolTableEntry * getMySymbol(string);
+    ~SymbolTableList();
+
 };
 
 

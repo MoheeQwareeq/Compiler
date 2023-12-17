@@ -1,6 +1,6 @@
 //
 //  FileDescriptor.h
-//  Parser
+//  Compiler
 //
 //  Created by MOHEE QWAREEQ on 09/08/2023.
 //
@@ -18,16 +18,15 @@ class FileDescriptor{
     
 private:
     
-    fstream streamFile;
+    fstream file;
     int lineNumber;     /* line number in the file */
     int charNumber;     /* character number in the line */
     string buffer;        /* buffer to store a line */
-    string file;         /* file name */
+    string fileName;         /* file name */
     
     
 public:
     
-    FileDescriptor();
     FileDescriptor(string);
     string getFileName();
     bool isOpen() ;

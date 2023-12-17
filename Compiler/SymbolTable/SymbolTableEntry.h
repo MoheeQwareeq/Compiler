@@ -1,22 +1,22 @@
 //
 //  SymbolTableEntry.h
-//  Symbol Table
+//  Compiler
 //
 //  Created by MOHEE QWAREEQ on 05/08/2023.
 //
 
 #ifndef SymbolTableEntry_h
 #define SymbolTableEntry_h
+
 #include <string>
 #include <fstream>
+using namespace std;
 
 #define TYPE_SIZE 5
 
-using namespace std;
-
 struct ste_list;
 
-enum j_type{
+enum J_TYPE{
     TYPE_INTEGER,
     TYPE_STRING,
     TYPE_BOOLEAN,
@@ -24,38 +24,37 @@ enum j_type{
     TYPE_NONE
 } ;
 
-enum ste_entry_type{
+enum STE_ENTRY_TYPE{
     STE_VAR,
     STE_CONST,
     STE_ROUTINE,
     STE_UNDEFINED,
 } ;
 
-static string type_names[] = {"integer", "string", "boolean", "float", "none"};
-static string entry_type_names[] = { "var", "const", "routine", "undefined"};
-static string str;
+const static string TYPE_NAMES[] = {"integer", "string", "boolean", "float", "none"};
+const static string ENTRY_TYPE_NAMES[] = { "var", "const", "routine", "undefined"};
 
-class SymbolTableEntry
-{
+class SymbolTableEntry{
+    
 public:
+    
     string name;
     int offset;
-    ste_entry_type type;
+    STE_ENTRY_TYPE type;
     SymbolTableEntry * next;
     SymbolTableEntry();
-    SymbolTableEntry(string entryName, ste_entry_type Type, j_type jType = TYPE_NONE);
-    SymbolTableEntry(string entryName, ste_entry_type Type, int constValue = 0);
+    SymbolTableEntry(string, STE_ENTRY_TYPE,J_TYPE = TYPE_NONE, int = 0);
     string toString();
-    void print(ofstream &fout);
-    j_type getType();
-    static int ste_const_value(SymbolTableEntry* e);   /*Return the value of the constant recorded in entry e.*/
-    static string ste_name(SymbolTableEntry* e);       /*Return the name of the object recorded in entry e*/
-    static j_type ste_var_type(SymbolTableEntry* e);   /*Return the type of the variable recorded in entry e */
+    void print(ofstream &);
+    J_TYPE getType();
+    static int steConstValue(SymbolTableEntry *);   /*Return the value of the constant recorded in entry e.*/
+    static string steName(SymbolTableEntry *);       /*Return the name of the object recorded in entry e*/
+    static J_TYPE steVarType(SymbolTableEntry * );   /*Return the type of the variable recorded in entry e */
     
     union{
         struct{
-            j_type type;
-        } var;
+            J_TYPE type;
+        }var;
         
         struct{
             int value;
@@ -63,7 +62,7 @@ public:
         
         struct{
             ste_list * formals;
-            j_type result_type;
+            J_TYPE resultType;
         } routine;
         
     };

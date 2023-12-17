@@ -1,6 +1,6 @@
 //
 //  SymbolTable.h
-//  Symbol Table
+//  Compiler
 //
 //  Created by MOHEE QWAREEQ on 05/08/2023.
 //
@@ -18,29 +18,29 @@ class SymbolTable
 private:
     
     unsigned long size;
-    int fold_case;
-    int number_entries; // Number of entries in table
-    int number_probes; // Number of probes into table
-    int number_hits; // Number of probes that immediately found entry
-    int max_search_dist; // Maximum entries search
-    EntryList *Table;   // Dynamic Array of size = Size
-    void init(unsigned long tableSize);
-    unsigned long ElfHash(char * str);
-    
+    bool foldCase;
+    int numberEntries; // Number of entries in table
+    int numberProbes; // Number of probes into table
+    int numberHits; // Number of probes that immediately found entry
+    int maxSearchDist; // Maximum entries search
+    EntryList * table;   // Dynamic Array of size = Size
+    void init(unsigned long );
+    unsigned long ElfHash(char *);
+    void convertToLowerCase(char * ,string);
+
     
 public:
-    SymbolTable* next;
+    SymbolTable * next;
     SymbolTable();
-    SymbolTable(int foldCase);
-    SymbolTable(unsigned long tableSize, int foldCase);
-    void reset(unsigned long tableSize);
-    SymbolTableEntry*   putSymbol(string entryName, ste_entry_type Type, j_type jType = TYPE_NONE);
-    SymbolTableEntry *  putSymbol(string entryName, ste_entry_type Type, int constValue = 0);
-    SymbolTableEntry *  getSymbol(string entryName);
-    void findAndPrintEntry(string entryName, ofstream &fout);//finds and prints the Entry if it exist
-    void printAll(ofstream &fout);
-    void print_symbol_stats(ofstream &fout);
-    void clear_symbol_table();
+    SymbolTable(bool);
+    SymbolTable(unsigned long , bool);
+    void reset(unsigned long );
+    SymbolTableEntry * putSymbol(string entryName, STE_ENTRY_TYPE Type, J_TYPE = TYPE_NONE ,int = 0);
+    SymbolTableEntry * getSymbol(string );
+    void findAndPrintEntry(string,ofstream &);//finds and prints the Entry if it exist
+    void printAll(ofstream &);
+    void printSymbolStats(ofstream &);
+    void clearSymbolTable();
     ~SymbolTable();
 };
 
