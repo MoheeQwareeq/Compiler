@@ -16,8 +16,8 @@ Parser::Parser(FileDescriptor & fileDescriptor, SymbolTableList & global) {
     semanticChecker = new SemanticChecker(this->fileDescriptor);
     codeGenerator = new CodeGenerator();
     fout.open("out.txt");
-    offset=0;
-    numberOfFormal=0;
+    offset = 0;
+    numberOfFormal = 0;
 }
 
 void Parser::match(Lexeme l) {
@@ -31,29 +31,29 @@ void Parser::match(Lexeme l) {
 }
 
 
-ast_list * Parser::parse() {
+AstList * Parser::parse() {
     token = scanner->scan();
-    return parse_program();
+    return parseProgram();
 }
 
 
-ast_list * Parser::parse_program() {
-    ast_list * program;
-    program = parse_decl_list(new ast_list());
+AstList * Parser::parseProgram() {
+    AstList * program;
+    program = parseDeclList(new AstList());
     global->printTable();
     return program;
 }
 
 
-ast_list * Parser::parse_decl_list(ast_list * list) {
-    ast_list * decl_list = list;
+AstList * Parser::parseDeclList(AstList * list) {
+    AstList * declList = list;
     
     if (token->type == LX_EOF) {
-        AST * eof;
+        Ast * eof;
         eof = makeAstNode(AST_EOF);
-        decl_list->head = eof;               //add EOF_AST to list λ case
-        decl_list->next = nullptr;
-        SymbolTableEntry* entry;
+        declList->head = eof;               //add EOF_AST to list λ case
+        declList->next = nullptr;
+        SymbolTableEntry * entry;
         entry = global->getMySymbol("main");
 
  
@@ -67,20 +67,20 @@ ast_list * Parser::parse_decl_list(ast_list * list) {
     }
     
     else {
-        AST * decl;
-        decl = parse_decl();
+        Ast * decl;
+        decl = parseDecl();
         match(LX_SEMICOLON);
-        decl_list->head = decl;             //add decl to list
-        decl_list->next = new ast_list();   //creat new ast_list
-        parse_decl_list(list->next);
+        declList->head = decl;             //add decl to list
+        declList->next = new AstList();   //creat new AstList
+        parseDeclList(list->next);
     }
     
-    return decl_list;
+    return declList;
 }
 
 
-AST * Parser::parse_decl() {
-    AST* decl = NULL;
+Ast * Parser::parseDecl() {
+    Ast * decl = nullptr;
     
     if (token->type == KW_VAR) {
         J_TYPE  type;
@@ -90,7 +90,7 @@ AST * Parser::parse_decl() {
         varName = token->stringValue;
         match(LX_IDENTIFIER);
         match(LX_COLON);
-        type = parse_type();
+        type = parseType();
         name = global->getHead()->putSymbol(varName, STE_VAR, type);
         if (name) decl = makeAstNode(AST_VAR_DECL, name, type);
         else fatalError(fileDescriptor, "name already definded");
@@ -103,11 +103,11 @@ AST * Parser::parse_decl() {
         int  value;
         string constName;
         match(KW_CONSTANT);
-        AST * expr;
+        Ast * expr;
         constName = token->stringValue;
         match(LX_IDENTIFIER);
         match(LX_EQ);
-        expr = parse_expr();
+        expr = parseExpr();
         if (!expr )
             fatalError(fileDescriptor, "invalid assign for constant");
         value =evalAstExpr(fout,fileDescriptor,expr);
@@ -126,59 +126,59 @@ AST * Parser::parse_decl() {
     else if (token->type == KW_FUNCTION) {
         SymbolTableEntry * name;
         string funcName;
-        J_TYPE result_type;
-        AST* block = nullptr;
-        ste_list * formals_list;
+        J_TYPE resultType;
+        Ast* block = nullptr;
+        SteList * formalsList;
         match(KW_FUNCTION);
         funcName = token->stringValue;
         match(LX_IDENTIFIER);
         global->enterScope();
         offset = 0;
         numberOfFormal = 0;
-        formals_list = parse_formal_list();
+        formalsList = parseFormalList();
         match(LX_COLON);
-        result_type = parse_type();
-        block = parse_block();
+        resultType = parseType();
+        block = parseBlock();
         global->exitScope();
-        name = global->getHead()->putSymbol(funcName, STE_ROUTINE, result_type);
+        name = global->getHead()->putSymbol(funcName, STE_ROUTINE, resultType);
         if (name){
-            name->routine.formals=formals_list;
-            name->routine.formals=formals_list;
-            decl = makeAstNode(AST_ROUTINE_DECL, name, formals_list,result_type,block);
-            semanticChecker->checkStatement(decl,result_type);
+            name->routine.formals = formalsList;
+            name->routine.formals = formalsList;
+            decl = makeAstNode(AST_ROUTINE_DECL, name, formalsList,resultType,block);
+            semanticChecker->checkStatement(decl,resultType);
         }
         else
             fatalError(fileDescriptor, "name already definded");
         
-        decl->a_routine_decl.num=offset;
-        decl->a_routine_decl.numOfFormal=numberOfFormal;
+        decl->aRoutineDecl.num = offset;
+        decl->aRoutineDecl.numOfFormal = numberOfFormal;
         codeGenerator->generate(decl);
 
     }
     
     else if (token->type == KW_PROCEDURE) {
         SymbolTableEntry * name;
-        ste_list * formals_list;
-        AST * block;
+        SteList * formalsList;
+        Ast * block;
         match(KW_PROCEDURE);
         string funcName = token->stringValue;
         match(LX_IDENTIFIER);
         global->enterScope();
         offset = 0;
         numberOfFormal = 0;
-        formals_list = parse_formal_list();
-        block = parse_block();
+        formalsList = parseFormalList();
+        block = parseBlock();
         global->exitScope();
         name = global->getHead()->putSymbol(funcName, STE_ROUTINE, TYPE_NONE);
         if (name){
-            name->routine.formals=formals_list;
-            decl = makeAstNode(AST_ROUTINE_DECL, name, formals_list,TYPE_NONE ,block);
+            name->routine.formals=formalsList;
+            decl = makeAstNode(AST_ROUTINE_DECL, name, formalsList,TYPE_NONE ,block);
             semanticChecker->checkStatement(decl,TYPE_NONE);
         }
         else
             fatalError(fileDescriptor, "name already definded");
-        decl->a_routine_decl.num=offset;
-        decl->a_routine_decl.numOfFormal=numberOfFormal;
+        decl->aRoutineDecl.num=offset;
+        decl->aRoutineDecl.numOfFormal=numberOfFormal;
         codeGenerator->generate(decl);
     }
     
@@ -192,7 +192,7 @@ AST * Parser::parse_decl() {
 
 
 
-J_TYPE Parser::parse_type() {
+J_TYPE Parser::parseType() {
     
     if (token->type == KW_INTEGER) {
         match(KW_INTEGER);
@@ -220,73 +220,73 @@ J_TYPE Parser::parse_type() {
 }
 
 
-ste_list * Parser::parse_formal_list() {
-    ste_list * formal_list = nullptr;
-    ste_list * formal_list_tail = nullptr;
+SteList * Parser::parseFormalList() {
+    SteList * formalList = nullptr;
+    SteList * formalListTail = nullptr;
     match(LX_LPAREN);
-    formal_list_tail = parse_formal_list_tail();
-    formal_list = formal_list_tail;
-    return formal_list;
+    formalListTail = parseFormalListTail();
+    formalList = formalListTail;
+    return formalList;
 }
 
 
-ste_list * Parser::parse_formal_list_tail() {
-    ste_list * formal_list_tail = nullptr;
+SteList * Parser::parseFormalListTail() {
+    SteList * formalListTail = nullptr;
     
     if (token->type == LX_RPAREN) {
         match(LX_RPAREN);
-        formal_list_tail =new ste_list();
+        formalListTail =new SteList();
     }
     
     else {
-        ste_list* formals;
-        formals = parse_formals();
+        SteList* formals;
+        formals = parseFormals();
         match(LX_RPAREN);
-        formal_list_tail = formals;
+        formalListTail = formals;
     }
     
-    return formal_list_tail;
+    return formalListTail;
 }
 
 
-ste_list * Parser::parse_formals() {
-    ste_list * formals = new ste_list();
+SteList * Parser::parseFormals() {
+    SteList * formals = new SteList();
     J_TYPE type;
     string id = token->stringValue;
     match(LX_IDENTIFIER);
     match(LX_COLON);
-    type = parse_type();
+    type = parseType();
     formals->head = global->getHead()->putSymbol(id,STE_VAR, type);
     formals->head->offset=offset++;
     numberOfFormal++;
-    formals->next = new ste_list();
-    parse_formals_tail(formals->next);
+    formals->next = new SteList();
+    parseFormalsTail(formals->next);
     return formals;
 }
 
 
-ste_list * Parser::parse_formals_tail(ste_list* formals) {
-    ste_list* formals_tail = nullptr;
+SteList * Parser::parseFormalsTail(SteList* formals) {
+    SteList * formalsTail = nullptr;
     
     if (token->type == LX_COMMA) {
-        formals_tail = formals;
+        formalsTail = formals;
         J_TYPE type;
         match(LX_COMMA);
         string id = token->stringValue;
         match(LX_IDENTIFIER);
         match(LX_COLON);
-        type = parse_type();
+        type = parseType();
         formals->head=global->getHead()->putSymbol(id,STE_VAR, type);
         formals->head->offset=offset++;
         numberOfFormal++;
-        formals_tail->next=new ste_list();
-        parse_formals_tail(formals_tail->next);
+        formalsTail->next=new SteList();
+        parseFormalsTail(formalsTail->next);
     }
-    return formals_tail;
+    return formalsTail;
 }
 
-AST * Parser::parse_stmt() {
-    AST * stmt = nullptr;
+Ast * Parser::parseStmt() {
+    Ast * stmt = nullptr;
     
     if (token->type == LX_IDENTIFIER) {
         string varName;
@@ -295,55 +295,55 @@ AST * Parser::parse_stmt() {
         SymbolTableEntry* entry;
         entry = global->getMySymbol(varName);
         if (!entry) fatalError(fileDescriptor, "use undefined var ");
-        stmt = parse_id_tail(entry);
+        stmt = parseIdTail(entry);
     }
     
     else if (token->type == KW_IF) {
-        AST * expr, * stmt_tail = nullptr;
+        Ast * expr, * stmtTail = nullptr;
         match(KW_IF);
-        expr = parse_expr();
+        expr = parseExpr();
         if (!expr )fatalError(fileDescriptor, "invalid condition in if statement");
         match(KW_THEN);
-        stmt = parse_stmt();
-        stmt_tail = parse_stmt_tail();
-        stmt = makeAstNode(AST_IF, expr, stmt, stmt_tail);
+        stmt = parseStmt();
+        stmtTail = parseStmtTail();
+        stmt = makeAstNode(AST_IF, expr, stmt, stmtTail);
         semanticChecker->checkStatement(stmt,TYPE_BOOLEAN);
     }
     
     
     else if (token->type == KW_WHILE) {
-        AST* expr = nullptr;
+        Ast* expr = nullptr;
         match(KW_WHILE);
-        expr = parse_expr();
+        expr = parseExpr();
         if (!expr )fatalError(fileDescriptor, "invalid condition in while statement");
         match(KW_DO);
-        stmt = parse_stmt();
+        stmt = parseStmt();
         match(KW_OD);
         stmt = makeAstNode(AST_WHILE, expr, stmt);
         semanticChecker->checkStatement(stmt,TYPE_BOOLEAN);
     }
     
     else if (token->type == KW_FOR) {
-        AST* expr_lower_bound = nullptr;
-        AST* expr_upper_bound = nullptr;
+        Ast* exprLowerBound = nullptr;
+        Ast* exprUpperBound = nullptr;
         match(KW_FOR);
-        string id=token->stringValue;
+        string id = token->stringValue;
         match(LX_IDENTIFIER);
         match(LX_COLON_EQ);
         SymbolTableEntry * var  = global->getMySymbol(id);
         if (!var)
             fatalError(fileDescriptor, "use undefined var ");
-        expr_lower_bound = parse_expr();
-        if (!expr_lower_bound )
-            fatalError(fileDescriptor, "invalid lower_bound of for statmnte");
+        exprLowerBound = parseExpr();
+        if (!exprLowerBound )
+            fatalError(fileDescriptor, "invalid lower bound of for statmnte");
         match(KW_TO);
-        expr_upper_bound = parse_expr();
-        if (!expr_upper_bound )
-            fatalError(fileDescriptor, "invalid upper_bound of for statmnte");
+        exprUpperBound = parseExpr();
+        if (!exprUpperBound )
+            fatalError(fileDescriptor, "invalid upper bound of for statmnte");
         match(KW_DO);
-        stmt = parse_stmt();
+        stmt = parseStmt();
         match(KW_OD);
-        stmt = makeAstNode(AST_FOR,var,expr_lower_bound,expr_upper_bound, stmt);
+        stmt = makeAstNode(AST_FOR,var,exprLowerBound,exprUpperBound, stmt);
         semanticChecker->checkStatement(stmt,TYPE_INTEGER);
     }
     
@@ -373,17 +373,17 @@ AST * Parser::parse_stmt() {
         else stmt = makeAstNode(AST_WRITE, entry);
     }
     else if (token->type == KW_RETURN) {
-        AST* expr = nullptr;
+        Ast* expr = nullptr;
         match(KW_RETURN);
         match(LX_LPAREN);
-        expr = parse_expr();
+        expr = parseExpr();
         match(LX_RPAREN);
         stmt = makeAstNode(AST_RETURN, expr);
     }
     else if (token->type == KW_BEGIN) {
-        AST* block;
+        Ast* block;
         global->enterScope();
-        block = parse_block();
+        block = parseBlock();
         global->exitScope();
         stmt = block;
     }
@@ -395,242 +395,242 @@ AST * Parser::parse_stmt() {
 }
 
 
-AST * Parser::parse_id_tail(SymbolTableEntry* identifier) {
+Ast * Parser::parseIdTail(SymbolTableEntry* identifier) {
     
-    AST * id_tail = nullptr;
+    Ast * idTail = nullptr;
     
     if (token->type == LX_COLON_EQ) {
-        AST* expr;
+        Ast* expr;
         match(LX_COLON_EQ);
-        expr=parse_expr();
+        expr=parseExpr();
         if (!expr )fatalError(fileDescriptor, "invalid assign statement");
         J_TYPE expectedType =identifier->getType();
-        id_tail = makeAstNode(AST_ASSIGN, identifier, expr);
-        semanticChecker->checkStatement(id_tail,expectedType);
+        idTail = makeAstNode(AST_ASSIGN, identifier, expr);
+        semanticChecker->checkStatement(idTail,expectedType);
     }
     
     else {
-        ast_list * argList;
-        argList = parse_arg_list();
-        id_tail = makeAstNode(AST_CALL, identifier, argList);
+        AstList * argList;
+        argList = parseArgList();
+        idTail = makeAstNode(AST_CALL, identifier, argList);
         J_TYPE expectedType= identifier->getType();
-        semanticChecker->checkStatement(id_tail,expectedType);
+        semanticChecker->checkStatement(idTail,expectedType);
     }
-    return id_tail;
+    return idTail;
 }
 
 
 
-AST * Parser::parse_stmt_tail() {
-    AST * stmt_tail = nullptr;
+Ast * Parser::parseStmtTail() {
+    Ast * stmtTail = nullptr;
     if (token->type == KW_FI)
         match(KW_FI);
     else if (token->type == KW_ELSE) {
         match(KW_ELSE);
-        stmt_tail = parse_stmt();
+        stmtTail = parseStmt();
         match(KW_FI);
     }
     
-    return stmt_tail;
+    return stmtTail;
 }
 
 
 
-AST * Parser::parse_block() {
-    AST* block = nullptr;
-    ste_list * var_decl_list = new ste_list();
-    ast_list * stmt_list;
+Ast * Parser::parseBlock() {
+    Ast* block = nullptr;
+    SteList * varDeclList = new SteList();
+    AstList * stmtList;
     match(KW_BEGIN);
-    parse_var_decl_list(var_decl_list);
-    stmt_list =new ast_list();
-    parse_stmt_list(stmt_list);
+    parseVarDeclList(varDeclList);
+    stmtList =new AstList();
+    parseStmtList(stmtList);
     match(KW_END);
-    block = makeAstNode(AST_BLOCK, var_decl_list,stmt_list);
+    block = makeAstNode(AST_BLOCK, varDeclList,stmtList);
     return block;
 }
 
 
-ste_list* Parser::parse_var_decl_list(ste_list* s) {
-    ste_list * var_decl_list = nullptr;
+SteList* Parser::parseVarDeclList(SteList* s) {
+    SteList * varDeclList = nullptr;
     if (token->type == KW_VAR) {
-        var_decl_list = s;
+        varDeclList = s;
         SymbolTableEntry* entry = new SymbolTableEntry();
-        entry = parse_var_decl();
-        var_decl_list->head = entry;
-        var_decl_list->head->offset=offset++;
-        var_decl_list->next=new ste_list();
+        entry = parseVarDecl();
+        varDeclList->head = entry;
+        varDeclList->head->offset=offset++;
+        varDeclList->next = new SteList();
         match(LX_SEMICOLON);
-        parse_var_decl_list(var_decl_list->next);
+        parseVarDeclList(varDeclList->next);
     }
     
-    return var_decl_list;
+    return varDeclList;
 }
 
 
-SymbolTableEntry * Parser::parse_var_decl() {
+SymbolTableEntry * Parser::parseVarDecl() {
     J_TYPE  type;
-    SymbolTableEntry * var_decl = nullptr;
+    SymbolTableEntry * varDecl = nullptr;
     string varName;
     match(KW_VAR);
     varName = token->stringValue;
     match(LX_IDENTIFIER);
     match(LX_COLON);
-    type = parse_type();
-    var_decl = global->getHead()->putSymbol(varName, STE_VAR, type);
-    if (var_decl == nullptr) fatalError(fileDescriptor, "already definded");
-    return var_decl;
+    type = parseType();
+    varDecl = global->getHead()->putSymbol(varName, STE_VAR, type);
+    if (!varDecl) fatalError(fileDescriptor, "already definded");
+    return varDecl;
 }
 
 
-ast_list* Parser::parse_stmt_list(ast_list* s) {
+AstList* Parser::parseStmtList(AstList* s) {
     
-    ast_list * stmt_list = nullptr;
-    if (first_of_stmt()) {
-        stmt_list = s;
-        AST * stmt;
-        stmt = parse_stmt();
+    AstList * stmtList = nullptr;
+    if (firstOfStmt()) {
+        stmtList = s;
+        Ast * stmt;
+        stmt = parseStmt();
         match(LX_SEMICOLON);
-        stmt_list->head = stmt;
-        stmt_list->next=new ast_list();
-        parse_stmt_list(stmt_list->next);
+        stmtList->head = stmt;
+        stmtList->next=new AstList();
+        parseStmtList(stmtList->next);
     }
-    return stmt_list;
+    return stmtList;
 }
 
 
 
 
-ast_list* Parser::parse_arg_list() {
-    ast_list * arg_list = nullptr;
+AstList* Parser::parseArgList() {
+    AstList * argList = nullptr;
     match(LX_LPAREN);
-    arg_list = parse_arg_list_tail();
-    return arg_list;
+    argList = parseArgListTail();
+    return argList;
 }
 
 
-ast_list* Parser::parse_arg_list_tail() {
-    ast_list * arg_list_tail =new ast_list();
+AstList* Parser::parseArgListTail() {
+    AstList * argListTail =new AstList();
     if (token->type == LX_RPAREN)
         match(LX_RPAREN);
     else {
-        parse_args(arg_list_tail);
+        parseArgs(argListTail);
         match(LX_RPAREN);
     }
     
-    return arg_list_tail;
+    return argListTail;
     
 }
 
 
-ast_list * Parser::parse_args(ast_list * s) {
-    ast_list * args = s;
-    AST * expr;
-    expr = parse_expr();
+AstList * Parser::parseArgs(AstList * s) {
+    AstList * args = s;
+    Ast * expr;
+    expr = parseExpr();
     if (!expr )fatalError(fileDescriptor, "invalid arg");
     args->head = expr;
-    args->next=new ast_list();
-    parse_args_tail(args->next);
+    args->next=new AstList();
+    parseArgsTail(args->next);
     return args;
 }
 
 
-AST* Parser::parse_args_tail(ast_list * s) {
-    AST * args_tail = nullptr;
+Ast* Parser::parseArgsTail(AstList * s) {
+    Ast * argsTail = nullptr;
     if (token->type == LX_COMMA) {
         match(LX_COMMA);
-        parse_args(s);
+        parseArgs(s);
     }
     
-    return args_tail;
+    return argsTail;
 }
 
 
-AST* Parser::parse_expr() {
-    AST * expr1 = nullptr;
-    AST * expr_tail = nullptr;
-    expr1 = parse_expr1();
-    expr_tail = parse_expr_tail(expr1);
-    return expr_tail;
+Ast* Parser::parseExpr() {
+    Ast * expr1 = nullptr;
+    Ast * exprTail = nullptr;
+    expr1 = parseExpr1();
+    exprTail = parseExprTail(expr1);
+    return exprTail;
 }
 
 
-AST * Parser::parse_expr_tail(AST * expr1) {
+Ast * Parser::parseExprTail(Ast * expr1) {
     Lexeme t=token->type;
-    if (t== KW_AND or t == KW_OR) {
-        AST* rel_conj, * expr_tail;
-        rel_conj = parse_rel_conj();
-        expr_tail = parse_expr1();
-        if (!expr1 or !expr_tail)
+    if (t == KW_AND or t == KW_OR) {
+        Ast* relConj, * exprTail;
+        relConj = parseRelConj();
+        exprTail = parseExpr1();
+        if (!expr1 or !exprTail)
             fatalError(fileDescriptor, "invalid expretion");
         if(t==KW_AND)
-            expr1=makeAstNode(AST_AND, expr1,expr_tail);
+            expr1=makeAstNode(AST_AND, expr1,exprTail);
         else
-            expr1=makeAstNode(AST_OR, expr1,expr_tail);
+            expr1=makeAstNode(AST_OR, expr1,exprTail);
         
-        expr1=parse_expr_tail(expr1);
+        expr1=parseExprTail(expr1);
     }
     return expr1;
 }
 
 
-AST* Parser::parse_expr1() {
-    AST * expr2 = nullptr;
-    AST * expr1_tail = nullptr;
-    expr2 = parse_expr2();
-    expr1_tail = parse_expr1_tail(expr2);
-    return expr1_tail;
+Ast* Parser::parseExpr1() {
+    Ast * expr2 = nullptr;
+    Ast * expr1Tail = nullptr;
+    expr2 = parseExpr2();
+    expr1Tail = parseExpr1Tail(expr2);
+    return expr1Tail;
 }
 
 
 
-AST * Parser::parse_expr1_tail(AST * expr2) {
-    AST * expr1_tail = nullptr;
+Ast * Parser::parseExpr1Tail(Ast * expr2) {
+    Ast * expr1Tail = nullptr;
     Lexeme t = token->type;
-    if (is_rel_op()) {
-        AST* rel_op;
-        rel_op = parse_rel_op();
-        expr1_tail = parse_expr2();
-        if (!expr2 or !expr1_tail)fatalError(fileDescriptor, "invalid expretion");
-        if (t == LX_EQ)expr2=makeAstNode(AST_EQ, expr2,expr1_tail);
+    if (isRelOp()) {
+        Ast * relOp;
+        relOp = parseRelOp();
+        expr1Tail = parseExpr2();
+        if (!expr2 or !expr1Tail)fatalError(fileDescriptor, "invalid expretion");
+        if (t == LX_EQ)expr2=makeAstNode(AST_EQ, expr2,expr1Tail);
         else if (t == LX_NEQ)
-            expr2=makeAstNode(AST_NEQ, expr2,expr1_tail);
+            expr2=makeAstNode(AST_NEQ, expr2,expr1Tail);
         else if (t == LX_LT)
-            expr2=makeAstNode(AST_LT, expr2,expr1_tail);
+            expr2=makeAstNode(AST_LT, expr2,expr1Tail);
         else if (t == LX_LE)
-            expr2=makeAstNode(AST_LE, expr2,expr1_tail);
+            expr2=makeAstNode(AST_LE, expr2,expr1Tail);
         else if (t == LX_GT)
-            expr2=makeAstNode(AST_GT, expr2,expr1_tail);
+            expr2=makeAstNode(AST_GT, expr2,expr1Tail);
         else if (t == LX_GE)
-            expr2=makeAstNode(AST_GE, expr2,expr1_tail);
+            expr2=makeAstNode(AST_GE, expr2,expr1Tail);
         
-        expr2=parse_expr1_tail(expr2);
+        expr2=parseExpr1Tail(expr2);
     }
     
     return expr2;
 }
 
 
-AST* Parser::parse_expr2() {
-    AST * expr3;
-    AST * expr2_tail;
-    expr3 = parse_expr3();
-    expr2_tail = parse_expr2_tail(expr3);
-    return expr2_tail;
+Ast* Parser::parseExpr2() {
+    Ast * expr3;
+    Ast * expr2Tail;
+    expr3 = parseExpr3();
+    expr2Tail = parseExpr2Tail(expr3);
+    return expr2Tail;
 }
 
 
-AST* Parser::parse_expr2_tail(AST* expr3) {
-    AST * expr2_tail = nullptr;
+Ast* Parser::parseExpr2Tail(Ast* expr3) {
+    Ast * expr2Tail = nullptr;
     Lexeme t = token->type;
     
     if (t == LX_PLUS or t == LX_MINUS) {
-        AST * arith_tail= nullptr;
-        arith_tail = parse_arith_op_tail1();
-        expr2_tail = parse_expr3();
-        if (!expr3 or !expr2_tail)fatalError(fileDescriptor, "invalid expretion");
-        if (t == LX_PLUS)expr3=makeAstNode(AST_PLUS, expr3,expr2_tail);
-        else expr3=makeAstNode(AST_MINUS, expr3,expr2_tail);
-        expr3 =parse_expr2_tail(expr3);
+        Ast * arithTail= nullptr;
+        arithTail = parseArithOpTail1();
+        expr2Tail = parseExpr3();
+        if (!expr3 or !expr2Tail)fatalError(fileDescriptor, "invalid expretion");
+        if (t == LX_PLUS)expr3=makeAstNode(AST_PLUS, expr3,expr2Tail);
+        else expr3=makeAstNode(AST_MINUS, expr3,expr2Tail);
+        expr3 =parseExpr2Tail(expr3);
     }
     
     return expr3;
@@ -639,46 +639,46 @@ AST* Parser::parse_expr2_tail(AST* expr3) {
 
 
 
-AST* Parser::parse_expr3() {
-    AST * expr4 = nullptr;
-    AST * expr3_tail = nullptr;
-    expr4 = parse_expr4();
-    expr3_tail = parse_expr3_tail(expr4);
-    return expr3_tail;
+Ast* Parser::parseExpr3() {
+    Ast * expr4 = nullptr;
+    Ast * expr3Tail = nullptr;
+    expr4 = parseExpr4();
+    expr3Tail = parseExpr3Tail(expr4);
+    return expr3Tail;
 }
 
 
-AST * Parser::parse_expr3_tail(AST * expr4) {
-    AST * expr3_tail = nullptr;
-    AST * arith_tail2=nullptr;
+Ast * Parser::parseExpr3Tail(Ast * expr4) {
+    Ast * expr3Tail = nullptr;
+    Ast * arithTail2=nullptr;
     Lexeme t = token->type;
     if (t == LX_STAR or t == LX_SLASH) {
-        arith_tail2 = parse_arith_op_tail2();
-        expr3_tail = parse_expr4();
-        if (!expr4 or !expr3_tail)fatalError(fileDescriptor, "invalid expretion");
-        if (t == LX_STAR)expr4=makeAstNode(AST_TIMES, expr4,expr3_tail);
-        else expr4=makeAstNode(AST_DIVIDE, expr4,expr3_tail);
-        expr4=parse_expr3_tail(expr4);
+        arithTail2 = parseArithOpTail2();
+        expr3Tail = parseExpr4();
+        if (!expr4 or !expr3Tail)fatalError(fileDescriptor, "invalid expretion");
+        if (t == LX_STAR)expr4=makeAstNode(AST_TIMES, expr4,expr3Tail);
+        else expr4=makeAstNode(AST_DIVIDE, expr4,expr3Tail);
+        expr4=parseExpr3Tail(expr4);
     }
     return expr4;
 }
 
 
 
-AST * Parser::parse_expr4() {
-    AST * expr4 = nullptr;
+Ast * Parser::parseExpr4() {
+    Ast * expr4 = nullptr;
     Lexeme t = token->type;
-    AST * expr5;
+    Ast * expr5;
     if (token->type == LX_MINUS || token->type == KW_NOT) {
-        AST* unary;
-        unary = parse_unary_op();
-        expr4 = parse_expr4();
+        Ast* unary;
+        unary = parseUnaryOp();
+        expr4 = parseExpr4();
         if (!expr4 )fatalError(fileDescriptor, "invalid expretion");
         if (t == LX_MINUS)expr4=makeAstNode(AST_UMINUS, expr4);
         else expr4=makeAstNode(AST_NOT, expr4);
     }
     else {
-        expr5 = parse_expr5();
+        expr5 = parseExpr5();
         expr4=expr5;
     }
     
@@ -686,19 +686,19 @@ AST * Parser::parse_expr4() {
 }
 
 
-AST * Parser::parse_expr5() {
-    AST * expr5 = nullptr;
+Ast * Parser::parseExpr5() {
+    Ast * expr5 = nullptr;
     if (token->type == LX_IDENTIFIER) {
-        ast_list* expr_id_tail;
+        AstList * exprIdTail;
         string id = token->stringValue;
         match(LX_IDENTIFIER);
         SymbolTableEntry* entry;
         entry = global->getMySymbol(id);
         if (!entry) fatalError(fileDescriptor, "use undefined var ");
         else {
-            expr_id_tail = parse_expr_id_tail();
+            exprIdTail = parseExprIdTail();
             
-            if (!expr_id_tail) {
+            if (!exprIdTail) {
                 if(entry->type == STE_ROUTINE )
                     fatalError(fileDescriptor,entry->name+ "use undefined var ");
                 expr5 = makeAstNode(AST_VAR, entry);
@@ -711,7 +711,7 @@ AST * Parser::parse_expr5() {
                 if(entry->type==STE_ROUTINE  and entry->getType()==TYPE_NONE)
                     fatalError(fileDescriptor, "procedure not return a value");
                 
-                expr5 = makeAstNode(AST_CALL, entry, expr_id_tail);
+                expr5 = makeAstNode(AST_CALL, entry, exprIdTail);
                 
                 if(entry->type==STE_ROUTINE )
                     semanticChecker->checkStatement(expr5,TYPE_NONE);
@@ -745,7 +745,7 @@ AST * Parser::parse_expr5() {
     }
     else if (token->type == LX_LPAREN) {
         match(LX_LPAREN);
-        expr5 = parse_expr();
+        expr5 = parseExpr();
         match(LX_RPAREN);
     }
     
@@ -754,36 +754,36 @@ AST * Parser::parse_expr5() {
 
 
 
-ast_list * Parser::parse_expr_id_tail() {
-    ast_list * expr_id_tail = nullptr;
+AstList * Parser::parseExprIdTail() {
+    AstList * exprIdTail = nullptr;
     if (token->type == LX_LPAREN) {
-        expr_id_tail = parse_arg_list();
+        exprIdTail = parseArgList();
     }
-    return expr_id_tail;
+    return exprIdTail;
 }
 
 
-AST * Parser::parse_arith_op_tail1() {
-    AST* arith_op_tail1 = nullptr;
+Ast * Parser::parseArithOpTail1() {
+    Ast* arithOpTail1 = nullptr;
     if (token->type == LX_PLUS) match(LX_PLUS);
     else if (token->type == LX_MINUS) match(LX_MINUS);
     
-    return arith_op_tail1;
+    return arithOpTail1;
 }
 
 
-AST * Parser::parse_arith_op_tail2() {
-    AST * arith_op_tail2 = nullptr;
+Ast * Parser::parseArithOpTail2() {
+    Ast * arithOpTail2 = nullptr;
     if (token->type == LX_STAR) match(LX_STAR);
     else if (token->type == LX_SLASH) match(LX_SLASH);
     
-    return arith_op_tail2;
+    return arithOpTail2;
     
 }
 
 
-AST * Parser::parse_rel_op() {
-    AST * rel_op = nullptr;
+Ast * Parser::parseRelOp() {
+    Ast * relOp = nullptr;
     if (token->type == LX_EQ) match(LX_EQ);
     else if (token->type == LX_NEQ) match(LX_NEQ);
     else if (token->type == LX_LT) match(LX_LT);
@@ -791,37 +791,37 @@ AST * Parser::parse_rel_op() {
     else if (token->type == LX_GT) match(LX_GT);
     else if (token->type == LX_GE) match(LX_GE);
     
-    return rel_op;
+    return relOp;
 }
 
 
-AST * Parser::parse_rel_conj() {
-    AST * rel_conj = nullptr;
+Ast * Parser::parseRelConj() {
+    Ast * relConj = nullptr;
     if (token->type == KW_AND) match(KW_AND);
     else if (token->type == KW_OR) match(KW_OR);
     
-    return rel_conj;
+    return relConj;
 }
 
 
-AST * Parser::parse_unary_op() {
-    AST * unary_op = nullptr;
+Ast * Parser::parseUnaryOp() {
+    Ast * unaryOp = nullptr;
     if (token->type == LX_MINUS) match(LX_MINUS);
     else if (token->type == KW_NOT) match(KW_NOT);
     
-    return unary_op;
+    return unaryOp;
 }
 
 
-void Parser::print(ast_list * s) {
-    while (s->next != NULL) {
+void Parser::print(AstList * s) {
+    while (s->next) {
         printAstNode(fout, s->head);
         s = s->next;
     }
 }
 
 
-bool Parser::first_of_stmt() {
+bool Parser::firstOfStmt() {
     if (token->type == LX_IDENTIFIER
         or token->type == KW_IF
         or token->type == KW_WHILE
@@ -834,7 +834,7 @@ bool Parser::first_of_stmt() {
     return false;
 }
 
-bool Parser::is_rel_op() {
+bool Parser::isRelOp() {
     if (token->type == LX_EQ
         or token->type == LX_NEQ
         or token->type == LX_LT

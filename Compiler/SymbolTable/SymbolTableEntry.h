@@ -14,7 +14,7 @@ using namespace std;
 
 #define TYPE_SIZE 5
 
-struct ste_list;
+struct SteList;
 
 enum J_TYPE{
     TYPE_INTEGER,
@@ -61,7 +61,7 @@ public:
         } constant;
         
         struct{
-            ste_list * formals;
+            SteList * formals;
             J_TYPE resultType;
         } routine;
         

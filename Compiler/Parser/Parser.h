@@ -10,7 +10,7 @@
 
 
 #include "FileDescriptor.h"
-#include "AST.h"
+#include "Ast.h"
 #include "Scanner.h"
 #include "SymbolTableList.h"
 #include "SemanticChecker.h"
@@ -28,52 +28,51 @@ private:
     ofstream fout;
     int offset;
     int numberOfFormal;
-    void match(Lexeme );
-    ast_list * parse_program();
-    ast_list * parse_decl_list(ast_list *);
-    AST * parse_decl();
-    J_TYPE parse_type();
-    ste_list * parse_formal_list();
-    ste_list * parse_formal_list_tail();
-    ste_list * parse_formals();
-    ste_list * parse_formals_tail(ste_list *);
-    AST* parse_stmt();
-    AST* parse_stmt_tail();
-    AST* parse_block();
-    ste_list * parse_var_decl_list(ste_list *);
-    SymbolTableEntry * parse_var_decl();
-    ast_list * parse_stmt_list(ast_list *);
-    AST * parse_id_tail(SymbolTableEntry *);
-    ast_list * parse_arg_list();
-    ast_list * parse_arg_list_tail();
-    ast_list * parse_args(ast_list *);
-    AST * parse_args_tail(ast_list *);
-    AST * parse_expr();
-    AST * parse_expr_tail(AST *);
-    AST * parse_expr1();
-    AST * parse_expr1_tail(AST *);
-    AST * parse_expr2();
-    AST * parse_expr2_tail(AST *);
-    AST * parse_expr3();
-    AST * parse_expr3_tail(AST *);
-    AST * parse_expr4();
-    AST * parse_expr5();
-    AST * parse_arith_op_tail1();
-    AST * parse_arith_op_tail2();
-    AST * parse_rel_op();
-    AST * parse_rel_conj();
-    AST * parse_unary_op();
-    bool first_of_stmt();
-    bool is_rel_op();
-    ast_list * parse_expr_id_tail();
+    void match(Lexeme);
+    AstList * parseProgram();
+    AstList * parseDeclList(AstList *);
+    Ast * parseDecl();
+    J_TYPE parseType();
+    SteList * parseFormalList();
+    SteList * parseFormalListTail();
+    SteList * parseFormals();
+    SteList * parseFormalsTail(SteList *);
+    Ast* parseStmt();
+    Ast* parseStmtTail();
+    Ast* parseBlock();
+    SteList * parseVarDeclList(SteList *);
+    SymbolTableEntry * parseVarDecl();
+    AstList * parseStmtList(AstList *);
+    Ast * parseIdTail(SymbolTableEntry *);
+    AstList * parseArgList();
+    AstList * parseArgListTail();
+    AstList * parseArgs(AstList *);
+    Ast * parseArgsTail(AstList *);
+    Ast * parseExpr();
+    Ast * parseExprTail(Ast *);
+    Ast * parseExpr1();
+    Ast * parseExpr1Tail(Ast *);
+    Ast * parseExpr2();
+    Ast * parseExpr2Tail(Ast *);
+    Ast * parseExpr3();
+    Ast * parseExpr3Tail(Ast *);
+    Ast * parseExpr4();
+    Ast * parseExpr5();
+    Ast * parseArithOpTail1();
+    Ast * parseArithOpTail2();
+    Ast * parseRelOp();
+    Ast * parseRelConj();
+    Ast * parseUnaryOp();
+    bool firstOfStmt();
+    bool isRelOp();
+    AstList * parseExprIdTail();
 
 public:
 
     Parser(FileDescriptor & , SymbolTableList &);
-    ast_list * parse();
-    void print(ast_list *);
+    AstList * parse();
+    void print(AstList *);
     ~Parser();
-    
 };
 
 

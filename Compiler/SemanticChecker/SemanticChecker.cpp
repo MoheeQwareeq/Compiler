@@ -28,8 +28,8 @@ void SemanticChecker::semanticWarning(FileDescriptor * fileDescriptor , string m
 }
 
 
-bool SemanticChecker::routineContainEnoughReturn(AST * n ){
-    ast_list * statement = n->a_block.stmts;
+bool SemanticChecker::routineContainEnoughReturn(Ast * n ){
+    AstList * statement = n->aBlock.stmts;
     if(!statement->head)return false;
     bool flag =false;
     while (statement->next) {
@@ -42,19 +42,19 @@ bool SemanticChecker::routineContainEnoughReturn(AST * n ){
         
         else if(statement->head->type == AST_IF) {
             bool flag1 = false,flag2 = false;
-            if(statement->head->a_if.altern){
-                if(statement->head->a_if.altern->type == AST_RETURN)
+            if(statement->head->aIf.altern){
+                if(statement->head->aIf.altern->type == AST_RETURN)
                     flag1 = true;
                 
-                if(statement->head->a_if.altern->type == AST_BLOCK)
-                    flag1 = routineContainEnoughReturn(statement->head->a_if.altern);
+                if(statement->head->aIf.altern->type == AST_BLOCK)
+                    flag1 = routineContainEnoughReturn(statement->head->aIf.altern);
             }
-              if(statement->head->a_if.conseq){
-                if(statement->head->a_if.conseq->type == AST_RETURN)
+              if(statement->head->aIf.conseq){
+                if(statement->head->aIf.conseq->type == AST_RETURN)
                     flag2 = true;
 
-                if (statement->head->a_if.conseq->type == AST_BLOCK)
-                    flag2 = routineContainEnoughReturn(statement->head->a_if.conseq);
+                if (statement->head->aIf.conseq->type == AST_BLOCK)
+                    flag2 = routineContainEnoughReturn(statement->head->aIf.conseq);
             }
             
             flag = flag1 and flag2;
@@ -70,14 +70,14 @@ bool SemanticChecker::routineContainEnoughReturn(AST * n ){
 
 
 
-void SemanticChecker:: cheakAllReturnType(AST * n ,J_TYPE expectedType){
+void SemanticChecker:: cheakAllReturnType(Ast * n ,J_TYPE expectedType){
     if(n == nullptr)
         return;
     
     else if(n->type == AST_RETURN){
-        J_TYPE return_type = expressionType(n->a_return.expr);
-        n->a_return.realReturnType=return_type;
-        n->a_return.expectReturnType=expectedType;
+        J_TYPE return_type = expressionType(n->aReturn.expr);
+        n->aReturn.realReturnType=return_type;
+        n->aReturn.expectReturnType=expectedType;
         
         if (expectedType != TYPE_NONE) {
             if (return_type != expectedType){
@@ -93,7 +93,7 @@ void SemanticChecker:: cheakAllReturnType(AST * n ,J_TYPE expectedType){
     }
     
     else if(n->type == AST_BLOCK){
-        ast_list * statement = n->a_block.stmts;
+        AstList * statement = n->aBlock.stmts;
         if(statement == nullptr) return;
         while (statement->next) {
             
@@ -102,17 +102,17 @@ void SemanticChecker:: cheakAllReturnType(AST * n ,J_TYPE expectedType){
             }
             
             else if (statement->head->type == AST_WHILE){
-                cheakAllReturnType(statement->head->a_while.body,expectedType);
+                cheakAllReturnType(statement->head->aWhile.body,expectedType);
                 
             }
             
             else if (statement->head->type == AST_FOR){
-                cheakAllReturnType(statement->head->a_for.body,expectedType);
+                cheakAllReturnType(statement->head->aFor.body,expectedType);
             }
             
             else if (statement->head->type == AST_IF){
-                cheakAllReturnType(statement->head->a_if.conseq,expectedType);
-                cheakAllReturnType(statement->head->a_if.altern,expectedType);
+                cheakAllReturnType(statement->head->aIf.conseq,expectedType);
+                cheakAllReturnType(statement->head->aIf.altern,expectedType);
             }
             
             statement = statement->next;
@@ -121,7 +121,7 @@ void SemanticChecker:: cheakAllReturnType(AST * n ,J_TYPE expectedType){
 }
 
 
-void  SemanticChecker::checkStatement (AST * n , J_TYPE expectedType){
+void  SemanticChecker::checkStatement (Ast * n , J_TYPE expectedType){
     
     switch (n->type) {
             
@@ -130,43 +130,43 @@ void  SemanticChecker::checkStatement (AST * n , J_TYPE expectedType){
             // its procedure
             if(expectedType == TYPE_NONE ){
                 //add return if procedure not contain return statment
-                if (!routineContainEnoughReturn(n->a_routine_decl.body)){
-                    ast_list * statement = n->a_routine_decl.body->a_block.stmts;
+                if (!routineContainEnoughReturn(n->aRoutineDecl.body)){
+                    AstList * statement = n->aRoutineDecl.body->aBlock.stmts;
                     
                     if (statement->head)
                         while (statement->next) {
                             statement = statement->next;
                         }
                     statement->head=makeAstNode(AST_RETURN,nullptr);
-                    statement->next=new ast_list;
+                    statement->next=new AstList;
                     statement->next->head=nullptr;
                 }
             }
             // its function
             else{
-                if (!routineContainEnoughReturn(n->a_routine_decl.body))
+                if (!routineContainEnoughReturn(n->aRoutineDecl.body))
                     semanticError(fileDescriptor, "function must return value");
             }
-            cheakAllReturnType(n->a_routine_decl.body,expectedType);
+            cheakAllReturnType(n->aRoutineDecl.body,expectedType);
             return;
         }
             
         case AST_ASSIGN:{
             
-            if(n->a_assign.lhs->type == STE_CONST )
+            if(n->aAssign.lhs->type == STE_CONST )
                 semanticError(fileDescriptor, "constant cannot be redeclared");
             
-            if(expectedType == expressionType(n->a_assign.rhs)){
-                n->a_assign.rightType=expectedType;
+            if(expectedType == expressionType(n->aAssign.rhs)){
+                n->aAssign.rightType=expectedType;
                 return;
             }
-            if(expectedType == TYPE_INTEGER and expressionType(n->a_assign.rhs) == TYPE_FLOAT){
-                n->a_assign.rightType = TYPE_FLOAT;
+            if(expectedType == TYPE_INTEGER and expressionType(n->aAssign.rhs) == TYPE_FLOAT){
+                n->aAssign.rightType = TYPE_FLOAT;
                 return;
             }
             
-            if(expectedType == TYPE_FLOAT and expressionType(n->a_assign.rhs) == TYPE_INTEGER){
-                n->a_assign.rightType = TYPE_INTEGER;
+            if(expectedType == TYPE_FLOAT and expressionType(n->aAssign.rhs) == TYPE_INTEGER){
+                n->aAssign.rightType = TYPE_INTEGER;
                 return;
             }
             semanticError(fileDescriptor, "Assign statement type mismatch");
@@ -174,7 +174,7 @@ void  SemanticChecker::checkStatement (AST * n , J_TYPE expectedType){
             
             
         case AST_IF:{
-            if(expressionType(n->a_if.predicate) == expectedType)
+            if(expressionType(n->aIf.predicate) == expectedType)
                 return;
             
             semanticError(fileDescriptor, "if statement predicate must be boolean type");
@@ -183,23 +183,23 @@ void  SemanticChecker::checkStatement (AST * n , J_TYPE expectedType){
             
         case AST_WHILE:{
             
-            if(expressionType(n->a_while.predicate) == expectedType)
+            if(expressionType(n->aWhile.predicate) == expectedType)
                 return;
             
             semanticError(fileDescriptor, "while statement predicate must be boolean type");
         }
         case AST_READ:
-            if(n->a_read.var->type==STE_CONST)
+            if(n->aRead.var->type==STE_CONST)
                 semanticError(fileDescriptor, "constant cannot be redeclared");
             return;
             
             
         case AST_FOR:{
-            if(n->a_for.var->type == STE_CONST)
+            if(n->aFor.var->type == STE_CONST)
                 semanticError(fileDescriptor, "cannot use constant var");
             
-            if(n->a_for.var->getType() == expectedType){
-                if( expressionType( n->a_for.lowerBound) == TYPE_INTEGER and  expressionType( n->a_for.upperBound)==TYPE_INTEGER)return;
+            if(n->aFor.var->getType() == expectedType){
+                if( expressionType( n->aFor.lowerBound) == TYPE_INTEGER and  expressionType( n->aFor.upperBound)==TYPE_INTEGER)return;
                 
                 semanticError(fileDescriptor, "lower and upper bound must be integers");
             }
@@ -209,11 +209,11 @@ void  SemanticChecker::checkStatement (AST * n , J_TYPE expectedType){
             
         case AST_CALL:{
             
-            if(n->a_call.callee->getType() != TYPE_NONE and expectedType !=TYPE_NONE)
+            if(n->aCall.callee->getType() != TYPE_NONE and expectedType !=TYPE_NONE)
                 semanticWarning(fileDescriptor, "function result is not used ");
             
-            ast_list * arg = n->a_call.arg_list;
-            ste_list * formal= n->a_call.callee->routine.formals;
+            AstList * arg = n->aCall.argList;
+            SteList * formal= n->aCall.callee->routine.formals;
             int number_of_args=0;
             int number_of_formals=0;
             
@@ -229,8 +229,8 @@ void  SemanticChecker::checkStatement (AST * n , J_TYPE expectedType){
             
             if(number_of_args != number_of_formals)semanticError(fileDescriptor, "invalid number of args");
             else{
-                arg = n->a_call.arg_list;
-                formal= n->a_call.callee->routine.formals;
+                arg = n->aCall.argList;
+                formal= n->aCall.callee->routine.formals;
                 while (formal->head ) {
                     arg->type = expressionType(arg->head);
                     if(formal->head->getType()!=expressionType(arg->head)){
@@ -251,7 +251,7 @@ void  SemanticChecker::checkStatement (AST * n , J_TYPE expectedType){
 }
 
 
-J_TYPE SemanticChecker::expressionType (AST *n){
+J_TYPE SemanticChecker::expressionType (Ast *n){
     if(!n)
         return TYPE_NONE;
     
@@ -267,33 +267,33 @@ J_TYPE SemanticChecker::expressionType (AST *n){
     else if(n->type == AST_FLOAT)
         return TYPE_FLOAT;
     
-    else if (n->type == AST_VAR and ( n->a_var.var->type == STE_VAR or n->a_var.var->type == STE_CONST))
-        return n->a_var.var->getType();
+    else if (n->type == AST_VAR and ( n->aVar.var->type == STE_VAR or n->aVar.var->type == STE_CONST))
+        return n->aVar.var->getType();
     
     else if (n->type == AST_CALL)
-        return n->a_call.callee->getType();
+        return n->aCall.callee->getType();
     
     else if (n->type == AST_PLUS ){
-        J_TYPE left_type  = expressionType (n->a_binary_op.larg);
-        J_TYPE right_type = expressionType (n->a_binary_op.rarg);
-        n->a_binary_op.l_type=left_type;
-        n->a_binary_op.r_type=right_type;
+        J_TYPE left_type  = expressionType (n->aBinaryOp.larg);
+        J_TYPE right_type = expressionType (n->aBinaryOp.rarg);
+        n->aBinaryOp.l_type=left_type;
+        n->aBinaryOp.r_type=right_type;
         
         if(left_type == TYPE_INTEGER && right_type == TYPE_INTEGER){
-            n->a_binary_op.rel_type=TYPE_INTEGER;
+            n->aBinaryOp.rel_type=TYPE_INTEGER;
             return TYPE_INTEGER;}
         
         else if(left_type == TYPE_STRING && right_type == TYPE_STRING){
-            n->a_binary_op.rel_type=TYPE_STRING;
+            n->aBinaryOp.rel_type=TYPE_STRING;
             return TYPE_STRING;}
         
         else if(left_type == TYPE_FLOAT && right_type == TYPE_FLOAT){
-            n->a_binary_op.rel_type=TYPE_FLOAT;
+            n->aBinaryOp.rel_type=TYPE_FLOAT;
             return TYPE_FLOAT;}
         
         else if((left_type == TYPE_FLOAT && right_type == TYPE_INTEGER)
                 or( left_type == TYPE_INTEGER && right_type == TYPE_FLOAT)){
-            n->a_binary_op.rel_type=TYPE_FLOAT;
+            n->aBinaryOp.rel_type=TYPE_FLOAT;
             return TYPE_FLOAT;
         }
         
@@ -303,23 +303,23 @@ J_TYPE SemanticChecker::expressionType (AST *n){
     
     
     else if (n->type == AST_MINUS or n->type == AST_TIMES or n->type == AST_DIVIDE ){
-        J_TYPE left_type  = expressionType (n->a_binary_op.larg);
-        J_TYPE right_type = expressionType (n->a_binary_op.rarg);
+        J_TYPE left_type  = expressionType (n->aBinaryOp.larg);
+        J_TYPE right_type = expressionType (n->aBinaryOp.rarg);
         
-        n->a_binary_op.l_type=left_type;
-        n->a_binary_op.r_type=right_type;
+        n->aBinaryOp.l_type=left_type;
+        n->aBinaryOp.r_type=right_type;
         
         if(left_type == TYPE_INTEGER && right_type == TYPE_INTEGER) {
-            n->a_binary_op.rel_type=TYPE_INTEGER;
+            n->aBinaryOp.rel_type=TYPE_INTEGER;
             return TYPE_INTEGER;}
         
         if(left_type == TYPE_FLOAT && right_type == TYPE_FLOAT) {
-            n->a_binary_op.rel_type=TYPE_FLOAT;
+            n->aBinaryOp.rel_type=TYPE_FLOAT;
             return TYPE_FLOAT;}
         
         else if((left_type == TYPE_FLOAT && right_type == TYPE_INTEGER)
                 or( left_type == TYPE_INTEGER && right_type == TYPE_FLOAT)){
-            n->a_binary_op.rel_type=TYPE_FLOAT;
+            n->aBinaryOp.rel_type=TYPE_FLOAT;
             return TYPE_FLOAT;}
         
         else {
@@ -330,22 +330,22 @@ J_TYPE SemanticChecker::expressionType (AST *n){
     }
     
     else if (n->type == AST_EQ  or n->type == AST_NEQ ){
-        J_TYPE left_type  = expressionType (n->a_binary_op.larg);
-        J_TYPE right_type = expressionType (n->a_binary_op.rarg);
+        J_TYPE left_type  = expressionType (n->aBinaryOp.larg);
+        J_TYPE right_type = expressionType (n->aBinaryOp.rarg);
         
-        n->a_binary_op.l_type=left_type;
-        n->a_binary_op.r_type=right_type;
+        n->aBinaryOp.l_type=left_type;
+        n->aBinaryOp.r_type=right_type;
         
         if((left_type == TYPE_INTEGER && right_type == TYPE_INTEGER)
            or (left_type == TYPE_STRING && right_type == TYPE_STRING)
            or (left_type == TYPE_BOOLEAN && right_type == TYPE_BOOLEAN)
            or(left_type == TYPE_FLOAT && right_type == TYPE_FLOAT) ){
-            n->a_binary_op.rel_type=TYPE_BOOLEAN;
+            n->aBinaryOp.rel_type=TYPE_BOOLEAN;
             return TYPE_BOOLEAN; }
         
         else if((left_type == TYPE_FLOAT && right_type == TYPE_INTEGER)
                 or( left_type == TYPE_INTEGER && right_type == TYPE_FLOAT)){
-            n->a_binary_op.rel_type=TYPE_BOOLEAN;
+            n->aBinaryOp.rel_type=TYPE_BOOLEAN;
             return TYPE_BOOLEAN;}
         
         
@@ -358,23 +358,23 @@ J_TYPE SemanticChecker::expressionType (AST *n){
     }
     
     else if (n->type == AST_LT  or n->type == AST_LE or n->type == AST_GT or n->type == AST_GE){
-        J_TYPE left_type  = expressionType (n->a_binary_op.larg);
-        J_TYPE right_type = expressionType (n->a_binary_op.rarg);
+        J_TYPE left_type  = expressionType (n->aBinaryOp.larg);
+        J_TYPE right_type = expressionType (n->aBinaryOp.rarg);
         
-        n->a_binary_op.l_type=left_type;
-        n->a_binary_op.r_type=right_type;
+        n->aBinaryOp.l_type=left_type;
+        n->aBinaryOp.r_type=right_type;
         
         if(left_type == TYPE_INTEGER && right_type == TYPE_INTEGER){
-            n->a_binary_op.rel_type=TYPE_BOOLEAN;
+            n->aBinaryOp.rel_type=TYPE_BOOLEAN;
             return TYPE_BOOLEAN;}
         
         if(left_type == TYPE_FLOAT && right_type == TYPE_FLOAT){
-            n->a_binary_op.rel_type=TYPE_BOOLEAN;
+            n->aBinaryOp.rel_type=TYPE_BOOLEAN;
             return TYPE_BOOLEAN;}
         
         else if((left_type == TYPE_FLOAT && right_type == TYPE_INTEGER)
                 or( left_type == TYPE_INTEGER && right_type == TYPE_FLOAT)){
-            n->a_binary_op.rel_type=TYPE_BOOLEAN;
+            n->aBinaryOp.rel_type=TYPE_BOOLEAN;
             return TYPE_BOOLEAN;}
         
         else {
@@ -391,11 +391,11 @@ J_TYPE SemanticChecker::expressionType (AST *n){
     
     else if (n->type == AST_AND or n->type == AST_OR){
         
-        J_TYPE left_type  = expressionType (n->a_binary_op.larg);
-        J_TYPE right_type = expressionType (n->a_binary_op.rarg);
+        J_TYPE left_type  = expressionType (n->aBinaryOp.larg);
+        J_TYPE right_type = expressionType (n->aBinaryOp.rarg);
         
         if(left_type == TYPE_BOOLEAN && right_type == TYPE_BOOLEAN) {
-            n->a_binary_op.rel_type=TYPE_BOOLEAN;
+            n->aBinaryOp.rel_type=TYPE_BOOLEAN;
             return TYPE_BOOLEAN;
         }
         
@@ -408,24 +408,24 @@ J_TYPE SemanticChecker::expressionType (AST *n){
     }
     
     else if(n->type ==AST_NOT) {
-        J_TYPE type  = expressionType (n->a_unary_op.arg);
+        J_TYPE type  = expressionType (n->aUnaryOp.arg);
         
         if(type == TYPE_BOOLEAN ){
-            n->a_unary_op.type=TYPE_BOOLEAN;
+            n->aUnaryOp.type=TYPE_BOOLEAN;
             return TYPE_BOOLEAN;}
         else
             semanticError(fileDescriptor, "type mismatch around not operater");
     }
     
     else if(n->type ==AST_UMINUS) {
-        J_TYPE type  = expressionType (n->a_unary_op.arg);
+        J_TYPE type  = expressionType (n->aUnaryOp.arg);
         
         if(type == TYPE_INTEGER ){
-            n->a_unary_op.type=TYPE_INTEGER;
+            n->aUnaryOp.type=TYPE_INTEGER;
             return TYPE_INTEGER;}
         
         if(type == TYPE_FLOAT ){
-            n->a_unary_op.type=TYPE_FLOAT;
+            n->aUnaryOp.type=TYPE_FLOAT;
             return TYPE_FLOAT;}
         
         else

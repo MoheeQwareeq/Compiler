@@ -13,7 +13,7 @@
 		BDC0851B2A9971EF002B871D /* SymbolTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BDC0850C2A9971EE002B871D /* SymbolTable.cpp */; };
 		BDC0851C2A9971EF002B871D /* Parser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BDC0850F2A9971EE002B871D /* Parser.cpp */; };
 		BDC0851D2A9971EF002B871D /* SymbolTableEntry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BDC085102A9971EE002B871D /* SymbolTableEntry.cpp */; };
-		BDC0851E2A9971EF002B871D /* AST.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BDC085112A9971EE002B871D /* AST.cpp */; };
+		BDC0851E2A9971EF002B871D /* Ast.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BDC085112A9971EE002B871D /* Ast.cpp */; };
 		BDC0851F2A9971EF002B871D /* EntryList.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BDC085132A9971EF002B871D /* EntryList.cpp */; };
 		BDC085202A9971EF002B871D /* SymbolTableList.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BDC085142A9971EF002B871D /* SymbolTableList.cpp */; };
 		BDC085212A9971EF002B871D /* Scanner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BDC085172A9971EF002B871D /* Scanner.cpp */; };
@@ -42,11 +42,11 @@
 		BDC0850A2A9971EE002B871D /* FileDescriptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileDescriptor.h; sourceTree = "<group>"; };
 		BDC0850B2A9971EE002B871D /* Parser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Parser.h; sourceTree = "<group>"; };
 		BDC0850C2A9971EE002B871D /* SymbolTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SymbolTable.cpp; sourceTree = "<group>"; };
-		BDC0850D2A9971EE002B871D /* AST.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; path = AST.h; sourceTree = "<group>"; };
+		BDC0850D2A9971EE002B871D /* Ast.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; path = Ast.h; sourceTree = "<group>"; };
 		BDC0850E2A9971EE002B871D /* EntryList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntryList.h; sourceTree = "<group>"; };
 		BDC0850F2A9971EE002B871D /* Parser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Parser.cpp; sourceTree = "<group>"; };
 		BDC085102A9971EE002B871D /* SymbolTableEntry.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SymbolTableEntry.cpp; sourceTree = "<group>"; };
-		BDC085112A9971EE002B871D /* AST.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AST.cpp; sourceTree = "<group>"; };
+		BDC085112A9971EE002B871D /* Ast.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Ast.cpp; sourceTree = "<group>"; };
 		BDC085122A9971EF002B871D /* Scanner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Scanner.h; sourceTree = "<group>"; };
 		BDC085132A9971EF002B871D /* EntryList.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EntryList.cpp; sourceTree = "<group>"; };
 		BDC085142A9971EF002B871D /* SymbolTableList.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SymbolTableList.cpp; sourceTree = "<group>"; };
@@ -90,8 +90,8 @@
 		BD8983EF2A9F9AAD0071EE72 /* Parser */ = {
 			isa = PBXGroup;
 			children = (
-				BDC0850D2A9971EE002B871D /* AST.h */,
-				BDC085112A9971EE002B871D /* AST.cpp */,
+				BDC0850D2A9971EE002B871D /* Ast.h */,
+				BDC085112A9971EE002B871D /* Ast.cpp */,
 				BDC0850B2A9971EE002B871D /* Parser.h */,
 				BDC0850F2A9971EE002B871D /* Parser.cpp */,
 			);
@@ -219,7 +219,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BDC0851E2A9971EF002B871D /* AST.cpp in Sources */,
+				BDC0851E2A9971EF002B871D /* Ast.cpp in Sources */,
 				BDC0851B2A9971EF002B871D /* SymbolTable.cpp in Sources */,
 				BDC0851F2A9971EF002B871D /* EntryList.cpp in Sources */,
 				BD65B78A2AA90ED50011A5EB /* CodeGenerator.cpp in Sources */,
